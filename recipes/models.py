@@ -22,4 +22,5 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(Ingredient)
     tag = models.ManyToManyField(Tag)
     cooking_time = models.PositiveSmallIntegerField()
+    pub_date = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField(unique=True)
