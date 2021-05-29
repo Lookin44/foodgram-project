@@ -1,3 +1,25 @@
 from django.db import models
 
-# Create your models here.
+from users.models import User
+
+
+class Tag(models.Model):
+    title = models.CharField(max_length=50)
+
+
+class Ingredient(models.Model):
+    title = models.CharField(max_length=50)
+    unit = models.CharField(max_length=50)
+
+
+class Recipe(models.Model):
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='recipes')
+    title = models.CharField(max_length=50)
+    image = models.ImageField(upload_to='recipes/')
+    ingredients = models.ManyToManyField(Ingredient)
+    tag = models.ManyToManyField(Tag)
+    cooking_time = models.PositiveSmallIntegerField()
+    slug = models.SlugField(unique=True)
