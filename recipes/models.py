@@ -41,6 +41,10 @@ class Tag(models.Model):
 class Ingredient(models.Model):
     title = models.CharField(max_length=50)
     unit = models.CharField(max_length=50, default='шт.',)
+    count = models.PositiveIntegerField()
+
+    def __str__(self):
+        return self.title
 
 
 class Recipe(models.Model):
