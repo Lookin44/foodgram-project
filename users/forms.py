@@ -4,6 +4,11 @@ from .models import User
 
 
 class CreationForm(UserCreationForm):
-    class Meta(UserCreationForm.Meta):
+
+    class Meta:
         model = User
-        fields = ("first_name", "last_name", "username", "email")
+        fields = ['first_name', 'username', 'email', 'password1']
+
+    def __init__(self, *args, **kwargs):
+        super(CreationForm, self).__init__(*args, **kwargs)
+        del self.fields['password2']

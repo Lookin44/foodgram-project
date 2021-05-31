@@ -22,10 +22,6 @@ class Tag(models.Model):
         verbose_name='tag name'
     )
 
-    class Meta:
-        verbose_name = 'Тэг'
-        verbose_name_plural = 'Тэги'
-
     def __str__(self):
         return self.title
 
