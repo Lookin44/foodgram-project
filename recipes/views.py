@@ -44,3 +44,26 @@ def new_recipe(request):
         recipe.save()
         return redirect('index')
     return render(request, 'new_recipe.html', {'form': form})
+
+
+@login_required
+def follow(request):
+    subscription = Recipe.objects.filter(author__following__user=request.user)
+    paginator = Paginator(subscription, 10)
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+    context = {'page': page,
+               'paginator': paginator,
+               'subscription': subscription}
+    return render(request, 'my_follow.html', context)
+
+
+@login_required
+def favorite(request):
+    favorite_list = Recipe.objects.filter(author__following__user=request.user)
+    paginator = Paginator(favorite_list, 10)
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+    context = {'page': page,
+               'paginator': paginator}
+    return render(request, 'my_favorite.html', context)

@@ -56,3 +56,45 @@ class Recipe(models.Model):
     description = models.TextField()
     pub_date = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField(unique=True)
+
+    def __str__(self):
+        return self.title
+
+
+class Follow(models.Model):
+
+    user = models.ForeignKey(
+        User,
+        related_name='follower',
+        on_delete=models.CASCADE
+    )
+    author = models.ForeignKey(
+        User,
+        related_name='following',
+        on_delete=models.CASCADE
+    )
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['user', 'author'],
+                                               name='unique_follows')]
+
+    def __str__(self):
+        return f'{self.user.name}, {self.author.name}'
+
+
+class Favorites(models.Model):
+
+    user = models.ForeignKey(
+        User,
+        related_name='menu',
+        on_delete=models.CASCADE
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        related_name='user_menu',
+        on_delete=models.CASCADE
+    )
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['user', 'recipe'],
+                                               name='unique_menu')]
