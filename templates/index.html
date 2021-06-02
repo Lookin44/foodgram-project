@@ -4,6 +4,7 @@
     {% include 'header.html' with index=True %}
 {% load static %}
 {% csrf_token %}
+    {% load tag_filters %}
 {% load user_filters %}
 
 <link rel="stylesheet" href="{% static 'pages/index.css' %}">

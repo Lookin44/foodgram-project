@@ -11,7 +11,7 @@
         <ul class="card__items">
             {% for tag in recipe.tag.all %}
             <li class="single-card__item">
-                <span class="badge badge_style_{{ tag.color }}">{{ tag.title }}</span>
+                <span class="badge badge_style_{{ tag.style }}">{{ tag.title }}</span>
             </li>
             {% endfor %}
         </ul>

@@ -1,3 +1,4 @@
+from django.db.models import Count
 from django.shortcuts import redirect, render, get_object_or_404
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
@@ -8,12 +9,23 @@ from users.models import User
 
 
 def index(request):
-    recipes_list = Recipe.objects.all()
+    tags_list = request.GET.getlist('filters')
+
+    if not tags_list:
+        tags_list = ['breakfast', 'lunch', 'dinner']
+
+    recipes_list = Recipe.objects.filter(tag__value__in=tags_list).select_related('author').prefetch_related('tag').distinct()
+
+    all_tags = Tag.objects.all()
     paginator = Paginator(recipes_list, 6)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-    context = {'page': page,
-               'paginator': paginator}
+    context = {
+        'page': page,
+        'paginator': paginator,
+        'all_tags': all_tags,
+        'tags_list': tags_list,
+    }
     return render(request, 'index.html', context)
 
 
@@ -48,13 +60,20 @@ def new_recipe(request):
 
 @login_required
 def follow(request):
-    subscription = Recipe.objects.filter(author__following__user=request.user)
-    paginator = Paginator(subscription, 10)
+    subscriptions = User.objects.filter(following__user=request.user).annotate(recipe_count=Count('recipes'))
+    recipe = {}
+    for sub in subscriptions:
+        recipe[sub] = Recipe.objects.filter(author=sub)[:3]
+
+    paginator = Paginator(subscriptions, 6)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-    context = {'page': page,
-               'paginator': paginator,
-               'subscription': subscription}
+    context = {
+        'paginator': paginator,
+        'page': page,
+        'recipe': recipe,
+    }
+
     return render(request, 'my_follow.html', context)
 
 
