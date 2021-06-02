@@ -1,22 +1,19 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-        <title>{% block title %}{% endblock %} | Асистент</title>
-        {% load static %}
-        {% block styles %}
-            <link rel="stylesheet" href="{% static 'pages/form.css' %}">
-        {% endblock %}
-    </head>
-    <body>
-        {% include 'include/header.html' %}
-        <main>
-            <div class="container">
-                {% block content %}
-                {% endblock content %}
-            </div>
-        </main>
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}Foodgram{% endblock %}</title>
+    {% block static %}
+    {% endblock static %}
+</head>
+<body class="body">
+        {% block content %}
+        {% endblock content %}
         {% include 'include/footer.html' %}
-    </body>
+        {% block js %}
+        {% endblock js %}
+</body>
 </html>

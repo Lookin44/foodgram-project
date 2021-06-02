@@ -1,10 +1,11 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% block title %}Избранное{% endblock %}
 {% block static %}
 {% load static %}
 <link rel="stylesheet" href="{% static 'pages/index.css' %}">
 {% endblock static %}
 {% block content %}
+    {% include 'header.html' with favorite=True %}
 {% csrf_token %}
 
 <main class="main container">
@@ -15,12 +16,12 @@
 
     <div class="card-list">
         {% for recipe in page %}
-            {% include "include/recipe.html" with recipe=recipe %}
+            {% include 'recipe.html' with recipe=recipe %}
         {% endfor %}
     </div>
 
     {% if page.has_other_pages %}
-        {% include "include/pagination.html" with items=page paginator=paginator tags_for_page=tags_list%}
+        {% include 'pagination.html' with items=page paginator=paginator tags_for_page=tags_list%}
     {% endif %}
 
 </main>

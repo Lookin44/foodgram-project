@@ -1,28 +1,25 @@
 {% extends 'base.html' %}
-{% block title %}Рецепты{% endblock %}
-{% block content %}
-    {% include 'header.html' with index=True %}
+{% block title %}Технологии{% endblock %}
 {% load static %}
-{% csrf_token %}
-{% load user_filters %}
+{% block content %}
+    {% include 'header.html' %}
 
 <link rel="stylesheet" href="{% static 'pages/index.css' %}">
 
 <body class="body">
     <main class="main container">
         <div class="main__header">
-            <h1 class="main__title">Рецепты</h1>
-            {% include 'tag.html' %}
+            <h1 class="main__title">Стек используемых технологий</h1>
         </div>
-        <div class="card-list">
-            {% for recipe in page %}
-                {% include 'recipe.html' with recipe=recipe %}
-            {% endfor %}
+        <div class="card-list card-list_column">
+            <ul class="shopping-list">
+                <li class="shopping-list__item">Python 3.8</li>
+                <li class="shopping-list__item">Django 3.2</li>
+                <li class="shopping-list__item">Docker</li>
+                <li class="shopping-list__item">Git</li>
+                <li class="shopping-list__item">CI/CD</li>
+            </ul>
         </div>
-
-        {% if page.paginator.count  > 6 %}
-            {% include 'pagination.html'%}
-        {% endif %}
     </main>
 </body>
     {% block scripts %}

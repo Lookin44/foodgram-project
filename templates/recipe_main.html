@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Рецепты{% endblock %}
 {% block content %}
+    {% include 'include/header.html' with index=True %}
 {% load static %}
 {% csrf_token %}
 {% load user_filters %}
@@ -89,21 +90,17 @@
     <script src="{% static 'js/components/Favorites.js'%}"></script>
     <script src="{% static 'js/components/Subscribe.js'%}"></script>
     <script src="{% static 'js/config/config.js'%}"></script>
-
     <script src="{% static 'js/components/MainCards.js'%}"></script>
     <script src="{% static 'js/components/SingleCard.js'%}"></script>
     <script src="{% static 'js/components/Header.js'%}"></script>
-
     <script src="{% static 'js/api/Api.js'%}"></script>
     <script src="{% static 'singlePage.js'%}"></script>
 {% else %}
     <script src="{% static 'js/components/Purchases.js'%}"></script>
     <script src="{% static 'js/config/config.js'%}"></script>
-
     <script src="{% static 'js/components/MainCards.js'%}"></script>
     <script src="{% static 'js/components/SingleCard.js'%}"></script>
     <script src="{% static 'js/components/Header.js'%}"></script>
-
     <script src="{% static 'js/api/Api.js'%}"></script>
     <script src="{% static 'singlePageNotAuth.js'%}"></script>
     {% endif %}

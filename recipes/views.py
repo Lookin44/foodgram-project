@@ -67,3 +67,9 @@ def favorite(request):
     context = {'page': page,
                'paginator': paginator}
     return render(request, 'my_favorite.html', context)
+
+
+def shop_list(request):
+    recipes_list = Recipe.objects.all()
+    context = {'recipes_list': recipes_list}
+    return render(request, 'shop_list.html', context)
