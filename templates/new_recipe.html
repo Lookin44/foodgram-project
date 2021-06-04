@@ -5,7 +5,8 @@
     <link rel="stylesheet" href="{% static 'pages/form.css' %}">
 {% endblock static %}
 {% block content %}
-    {% include 'header.html' with new_recipe=True %}
+{% include 'header.html' with new_recipe=True %}
+
 <main class="main container">
 
     <div class="main__header">
@@ -14,7 +15,6 @@
 
     <div class="form-container">
         <form class="form" method="post" enctype="multipart/form-data">
-
             {% csrf_token %}
 
             <div class="form__group">
@@ -24,6 +24,7 @@
                     <input type="text" id="id_name" name="title" class="form__input" value="{{ recipe.title }}">
                     <span class="form__error"></span>
                 </div>
+
             </div>
 
             <div class="form__group">

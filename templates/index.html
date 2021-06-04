@@ -1,13 +1,15 @@
 {% extends 'base.html' %}
 {% block title %}Рецепты{% endblock %}
+{% block static %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'pages/index.css' %}">
+{% endblock static %}
 {% block content %}
     {% include 'header.html' with index=True %}
-{% load static %}
-{% csrf_token %}
-    {% load tag_filters %}
-{% load user_filters %}
 
-<link rel="stylesheet" href="{% static 'pages/index.css' %}">
+{% csrf_token %}
+{% load tag_filters %}
+{% load user_filters %}
 
 <body class="body">
     <main class="main container">
@@ -26,7 +28,7 @@
         {% endif %}
     </main>
 </body>
-    {% block scripts %}
+    {% block js %}
         <script src="{% static 'js/components/MainCards.js'%}"></script>
         <script src="{% static 'js/components/Purchases.js'%}"></script>
         <script src="{% static 'js/components/Favorites.js'%}"></script>
@@ -34,6 +36,10 @@
         <script src="{% static 'js/components/CardList.js'%}"></script>
         <script src="{% static 'js/components/Header.js'%}"></script>
         <script src="{% static 'js/api/Api.js'%}"></script>
-        <script src="{% static 'indexAuth.js'%}"></script>
-    {% endblock %}
+        {% if user.is_authenticated %}
+            <script src="{% static 'indexAuth.js'%}"></script>
+        {% else %}
+            <script src="{% static 'indexNotAuth.js'%}"></script>
+        {% endif %}
+    {% endblock js %}
 {% endblock %}

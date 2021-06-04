@@ -13,8 +13,8 @@ class Tag(models.Model):
 
 
 class Ingredient(models.Model):
-    title = models.CharField(max_length=50)
-    unit = models.CharField(max_length=50, default='шт.',)
+    title = models.CharField('Название ингредиента', max_length=50)
+    unit = models.CharField('Мера', max_length=50, default='шт.',)
     count = models.PositiveIntegerField()
 
     def __str__(self):
@@ -34,6 +34,9 @@ class Recipe(models.Model):
     description = models.TextField()
     pub_date = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField(unique=True)
+
+    class Meta:
+        ordering = ('-pub_date', )
 
     def __str__(self):
         return self.title
