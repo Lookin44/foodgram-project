@@ -10,7 +10,6 @@ def get_filter_values(value):
 
 @register.filter(name='get_filter_link')
 def get_filter_values(request, tag):
-    """Изменение строки запроса в соответствии с выбранными тегами."""
     new_request = request.GET.copy()
     if tag.value in request.GET.getlist('filters'):
         filters = new_request.getlist('filters')

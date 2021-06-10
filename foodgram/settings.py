@@ -7,7 +7,7 @@ SECRET_KEY = 'django-insecure-(k2!d15rx(@f8n-b9us=c(m+v-(g3x51yku9x)qv7910vvsbqy
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'about',
@@ -41,7 +41,11 @@ ABOUT_DIR = os.path.join(BASE_DIR, 'templates', 'about')
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [TEMPLATES_DIR, ABOUT_DIR, INCLUDE_DIR],
+        'DIRS': [
+            TEMPLATES_DIR,
+            ABOUT_DIR,
+            INCLUDE_DIR
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -49,6 +53,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'recipes.get_shop_list.get_shop_list'
             ],
         },
     },
