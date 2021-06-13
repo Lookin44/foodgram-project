@@ -5,17 +5,13 @@
     <link rel="stylesheet" href="{% static 'pages/shopList.css' %}">
 {% endblock static %}
 {% block content %}
-{% include 'header.html' with shop_list=True %}
+    {% include 'header.html' with shop_list=True %}
 {% csrf_token %}
-
 <main class="main container">
-
     <div class="main__header">
         <h1 class="main__title">Список покупок</h1>
     </div>
-
     <div class="card-list card-list_column">
-
         <ul class="shopping-list">
             {% for recipe in purchases %}
                 <li class="shopping-list__item" data-id="111">
@@ -27,16 +23,15 @@
                         <h3 class="recipe__title">{{ recipe.title }}</h3>
                         <p class="recipe__text"><span class="icon-time"></span>&#160;&#160;{{ recipe.cooking_time }}&#160;мин</p>
                     </div>
-
                     <a href="{% url 'shop_list' %}?recipe_id={{recipe.id}}" class="shopping-list__button link">Удалить</a>
                 </li>
             {% endfor %}
         </ul>
-        <a href="#"><button class="button button_style_blue">Скачать список</button></a>
-
+        {% if purchases %}
+        <a href="{% url 'get_purchases' %}"><button class="button button_style_blue">Скачать список</button></a>
+        {% endif %}
     </div>
 </main>
-
 {% endblock content %}
 {% block js %}
 <script src="{% static 'js/config/config.js' %}"></script>

@@ -5,13 +5,13 @@
     <link rel="stylesheet" href="{% static 'pages/index.css' %}">
 {% endblock static %}
 {% block content %}
-{% include 'header.html' with index=True %}
+    {% include 'header.html' with index=True %}
 {% load tag_filters %}
 {% load recipe_filters %}
 {% csrf_token %}
  <main class="main container">
     <div class="main__header">
-        <h1 class="main__title">{{ profile }}</h1>
+        <h1 class="main__title">{{ profile.first_name }}</h1>
         <ul class="tags">
             {% with filter_values=request.GET|get_filter_values %}
                 {% for tag in all_tags %}
@@ -41,13 +41,11 @@
             {% include 'recipe.html' with recipe=recipe %}
         {% endfor %}
     </div>
-
     {% if page.has_other_pages %}
         {% include 'pagination.html' with items=page paginator=paginator tags_for_page=tags_list%}
     {% endif %}
 </main>
 {% endblock content %}
-
 {% block js %}
     <script src="{% static 'js/components/MainCards.js' %}"></script>
     <script src="{% static 'js/components/Purchases.js' %}"></script>

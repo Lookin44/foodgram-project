@@ -2,6 +2,7 @@ from django.contrib.auth.views import PasswordResetView
 from django.http import HttpResponseRedirect
 from django.views.generic import CreateView
 from django.urls import reverse_lazy
+
 from .forms import CreationForm
 
 
@@ -22,7 +23,7 @@ class MyPasswordResetView(PasswordResetView):
             'subject_template_name': self.subject_template_name,
             'request': self.request,
             'html_email_template_name':
-                'registration/password_reset_email.html',
+                'password_reset_email.html',
             'extra_email_context': self.extra_email_context,
         }
         form.save(**opts)

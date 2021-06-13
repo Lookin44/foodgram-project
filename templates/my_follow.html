@@ -1,77 +1,26 @@
 {% extends 'base.html' %}
 {% block title %}Мои подписки{% endblock %}
-
 {% block static %}
 {% load static %}
     <link rel="stylesheet" href="{% static 'pages/myFollow.css' %}">
 {% endblock static %}
-
 {% block content %}
     {% include 'header.html' with follow=True %}
 {% csrf_token %}
-
 <main class="main container">
-
     <div class="main__header">
         <h1 class="main__title">Мои подписки</h1>
     </div>
-
     <div class="card-list">
     {% for subscription in page %}
-        <div class="card-user" data-author={{ subscription.id }}>
-
-        <div class="card-user__header">
-            <h2 class="card-user__title">{{ subscription }}</h2>
-        </div>
-
-        <div class="card-user__body">
-
-            <ul class="card-user__items">
-
-                {% for author, recipes in recipe.items %}
-                    {% if author == subscription%}
-                        {% for recipe in recipes %}
-                            <li class="card-user__item">
-                                <div class="recipe">
-                                    {% load thumbnail %}
-                                    {% thumbnail recipe.image "960x339" as im %}
-                                        <img src="{{ im.url }}" class="recipe__image">
-                                    {% endthumbnail %}
-                                    <h3 class="recipe__title">{{ recipe.title }}</h3>
-                                    <p class="recipe__text"><span class="icon-time"></span>&#160;&#160;{{ recipe.cooking_time }}&#160;мин</p>
-                                </div>
-                            </li>
-                        {% endfor%}
-                    {% endif %}
-                {% endfor %}
-
-                {% if subscription.recipe_count > 3 %}
-                <li class="card-user__item">
-                    <a href="{% url 'profile' username=subscription.username %}" class="card-user__link link">Еще рецептов: {{ subscription.recipe_count|add:-3 }}</a>
-                </li>
-                {% endif %}
-
-            </ul>
-
-        </div>
-
-        <div class="card-user__footer">
-            <button class="button button_style_light-blue button_size_auto" name="subscribe">Отписаться</button>
-        </div>
-
-    </div>
+        {% include 'subscration.html' with subscription=subscription recipe=recipe %}
     {% endfor %}
-
     </div>
-
     {% if page.has_other_pages %}
         {% include 'pagination.html' with items=page paginator=paginator%}
     {% endif %}
-
 </main>
-
 {% endblock content %}
-
 {% block js %}
 <script src="{% static 'js/config/config.js' %}"></script>
 <script src="{% static 'js/components/Subscribe.js' %}"></script>

@@ -11,27 +11,7 @@ from django.views.decorators.http import require_http_methods
 from .form import RecipeCreateForm, RecipeForm
 from .models import (Amount, Favorite, Ingredient, Recipe, ShopList,
                      Subscription, Tag, User)
-
-
-def get_ingredients(request):
-    ingredients = {}
-    for key in request.POST:
-        if key.startswith('nameIngredient'):
-            ing_num = key[15:]
-            ingredients[request.POST[key]] = request.POST[
-                                                'valueIngredient_' + ing_num]
-    return ingredients
-
-
-def get_tags_for_edit(request):
-    data = request.POST.copy()
-    tags = []
-    for value in ['lunch', 'dinner', 'breakfast']:
-        if value in data and data.get(value) == 'on':
-            tag = get_object_or_404(Tag, value=value)
-            tags.append(tag)
-
-    return tags
+from .maintenance import get_ingredients, get_tags_for_edit
 
 
 def index(request):
@@ -62,16 +42,13 @@ def index(request):
 
 def profile(request, username):
     follow_button = False
-
     tags_list = request.GET.getlist('filters')
 
     if not tags_list:
         tags_list = ['breakfast', 'lunch', 'dinner']
 
     all_tags = Tag.objects.all()
-
     profile = get_object_or_404(User, username=username)
-
     recipes_profile = Recipe.objects.filter(
         author=profile
     ).filter(
@@ -115,6 +92,7 @@ def ingredients(request):
     return JsonResponse(ing_list, safe=False)
 
 
+@login_required
 def new_recipe(request):
     if request.method == 'POST':
         form = RecipeCreateForm(
@@ -143,18 +121,14 @@ def new_recipe(request):
 
 
 @login_required
-def recipe_edit(request, username, recipe_id):
-
+def recipe_edit(request, recipe_id):
     recipe = get_object_or_404(Recipe, pk=recipe_id)
     author = get_object_or_404(User, id=recipe.author_id)
     all_tags = Tag.objects.all()
     recipe_tags = recipe.tags.values_list('value', flat=True)
 
     if request.user != author:
-        return redirect(
-            'recipe',
-            recipe_id=recipe_id
-        )
+        return redirect('recipe', recipe_id=recipe_id)
 
     if request.method == 'POST':
         new_tags = get_tags_for_edit(request)
@@ -180,27 +154,25 @@ def recipe_edit(request, username, recipe_id):
                 amount.save()
 
             my_recipe.tags.set(new_tags)
-            return redirect(
-                'recipe',
-                recipe_id=recipe.id,
-            )
+            return redirect('recipe', recipe_id=recipe.id)
 
     form = RecipeForm(instance=recipe)
-    return render(request, 'recipe_edit.html', {
+    context = {
         'form': form,
         'recipe': recipe,
         'all_tags': all_tags,
         'recipe_tags': recipe_tags,
-    })
+    }
+    return render(request, 'recipe_edit.html', context)
 
 
 @login_required
-def recipe_delete(request, username, recipe_id):
+def recipe_delete(request, recipe_id):
     recipe = get_object_or_404(Recipe, pk=recipe_id)
 
     if request.user == recipe.author:
         recipe.delete()
-        return redirect('profile', username=username)
+        return redirect('profile', username=request.user)
     return redirect('recipe', recipe_id=recipe_id)
 
 
@@ -228,32 +200,35 @@ def favorites(request):
 
 
 @login_required
-@require_http_methods(["POST", "DELETE"])
-def change_favorites(request, recipe_id):
-    if request.method == "POST":
-        recipe_id = json.loads(request.body).get('id')
-        recipe = get_object_or_404(Recipe, pk=recipe_id)
-        obj, created = Favorite.objects.get_or_create(user=request.user,
-                                                      recipe=recipe)
-        if not created:
-            return JsonResponse({'success': False})
-        return JsonResponse({'success': True})
-    elif request.method == "DELETE":
-        recipe = get_object_or_404(Recipe, pk=recipe_id)
-        removed = Favorite.objects.filter(user=request.user,
-                                          recipe=recipe).delete()
-        if removed:
-            return JsonResponse({'success': True})
-        return JsonResponse({'success': False})
+def my_follow(request):
+    subscriptions = User.objects.filter(
+        following__user=request.user
+    ).annotate(
+        recipe_count=Count(
+            'recipes'
+        )
+    )
+    recipe = {}
+    for sub in subscriptions:
+        recipe[sub] = Recipe.objects.filter(
+            author=sub
+        )[:3]
+    paginator = Paginator(subscriptions, 6)
+    page_number = request.GET.get('page')
+    page = paginator.get_page(page_number)
+    context = {
+        'paginator': paginator,
+        'page': page,
+        'recipe': recipe
+    }
+    return render(request, 'my_follow.html', context)
 
 
 @login_required
 def shop_list(request):
     if request.GET:
         recipe_id = request.GET.get('recipe_id')
-        ShopList.objects.get(
-            recipe__id=recipe_id
-        ).delete()
+        ShopList.objects.get(recipe__id=recipe_id).delete()
     purchases = Recipe.objects.filter(shop_list__user=request.user)
     context = {'purchases': purchases}
     return render(request, 'shop_list.html', context)
@@ -283,9 +258,29 @@ def get_purchases(request):
 
 
 @login_required
-@require_http_methods(["POST", "DELETE"])
+@require_http_methods(['POST', 'DELETE'])
+def change_favorites(request, recipe_id):
+    if request.method == 'POST':
+        recipe_id = json.loads(request.body).get('id')
+        recipe = get_object_or_404(Recipe, pk=recipe_id)
+        obj, created = Favorite.objects.get_or_create(user=request.user,
+                                                      recipe=recipe)
+        if not created:
+            return JsonResponse({'success': False})
+        return JsonResponse({'success': True})
+    elif request.method == 'DELETE':
+        recipe = get_object_or_404(Recipe, pk=recipe_id)
+        removed = Favorite.objects.filter(user=request.user,
+                                          recipe=recipe).delete()
+        if removed:
+            return JsonResponse({'success': True})
+        return JsonResponse({'success': False})
+
+
+@login_required
+@require_http_methods(['POST', 'DELETE'])
 def purchases(request, recipe_id):
-    if request.method == "POST":
+    if request.method == 'POST':
         recipe_id = json.loads(request.body).get('id')
         recipe = get_object_or_404(Recipe, pk=recipe_id)
         obj, created = ShopList.objects.get_or_create(user=request.user,
@@ -293,7 +288,7 @@ def purchases(request, recipe_id):
         if not created:
             return JsonResponse({'success': False})
         return JsonResponse({'success': True})
-    elif request.method == "DELETE":
+    elif request.method == 'DELETE':
         recipe = get_object_or_404(Recipe, pk=recipe_id)
         removed = ShopList.objects.filter(user=request.user,
                                           recipe=recipe).delete()
@@ -320,28 +315,3 @@ def subscriptions(request, author_id):
         if removed:
             return JsonResponse({'success': True})
         return JsonResponse({'success': False})
-
-
-@login_required
-def my_follow(request):
-    subscriptions = User.objects.filter(
-        following__user=request.user
-    ).annotate(
-        recipe_count=Count(
-            'recipes'
-        )
-    )
-    recipe = {}
-    for sub in subscriptions:
-        recipe[sub] = Recipe.objects.filter(
-            author=sub
-        )[:3]
-
-    paginator = Paginator(subscriptions, 6)
-    page_number = request.GET.get('page')
-    page = paginator.get_page(page_number)
-
-    return render(request, 'my_follow.html', {'paginator': paginator,
-                                              'page': page,
-                                              'recipe': recipe}
-                  )

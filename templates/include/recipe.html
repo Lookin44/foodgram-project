@@ -12,7 +12,7 @@
         </ul>
         <div class="card__items card__items_column">
             <p class="card__text"><span class="icon-time"></span>&#160;&#160;{{ recipe.cooking_time }}&#160;мин</p>
-            <p class="card__text"><span class="icon-user"></span><a href="{% url 'profile' recipe.author.username %}" style="text-decoration: none" style="color: black">&#160;&#160;&#160;{{ recipe.author }}</a></p>
+            <p class="card__text"><span class="icon-user"></span><a href="{% url 'profile' recipe.author.username %}" style="text-decoration: none" style="color: black">&#160;&#160;&#160;{{ recipe.author.first_name }}</a></p>
         </div>
     </div>
     <div class="card__footer">
@@ -29,7 +29,7 @@
                 <button class="button button_style_none" name="favorites" data-out><span class="icon-favorite"></span></button>
             {% endif %}
         {% else %}
-            <button class="button button_style_light-blue" onclick="location.href= '/auth/login/';"><span class="icon-plus button__icon"></span> Добавить в покупки</button></li>
+            <button class="button button_style_light-blue" onclick="location.href= '/auth/login/';"><span class="icon-plus button__icon"></span> Добавить в покупки</button>
         {% endif %}
     </div>
 </div>

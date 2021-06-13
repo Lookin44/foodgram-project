@@ -2,15 +2,12 @@
 {% block title %}Рецепты{% endblock %}
 {% block static %}
 {% load static %}
-<link rel="stylesheet" href="{% static 'pages/index.css' %}">
+    <link rel="stylesheet" href="{% static 'pages/index.css' %}">
 {% endblock static %}
 {% block content %}
     {% include 'header.html' with index=True %}
-
 {% csrf_token %}
 {% load tag_filters %}
-{% load user_filters %}
-
 <body class="body">
     <main class="main container">
         <div class="main__header">
@@ -22,24 +19,23 @@
                 {% include 'recipe.html' with recipe=recipe %}
             {% endfor %}
         </div>
-
         {% if page.paginator.count  > 6 %}
             {% include 'pagination.html'%}
         {% endif %}
     </main>
 </body>
-    {% block js %}
-        <script src="{% static 'js/components/MainCards.js'%}"></script>
-        <script src="{% static 'js/components/Purchases.js'%}"></script>
-        <script src="{% static 'js/components/Favorites.js'%}"></script>
-        <script src="{% static 'js/config/config.js'%}"></script>
-        <script src="{% static 'js/components/CardList.js'%}"></script>
-        <script src="{% static 'js/components/Header.js'%}"></script>
-        <script src="{% static 'js/api/Api.js'%}"></script>
-        {% if user.is_authenticated %}
-            <script src="{% static 'indexAuth.js'%}"></script>
-        {% else %}
-            <script src="{% static 'indexNotAuth.js'%}"></script>
-        {% endif %}
-    {% endblock js %}
 {% endblock %}
+{% block js %}
+    <script src="{% static 'js/components/MainCards.js'%}"></script>
+    <script src="{% static 'js/components/Purchases.js'%}"></script>
+    <script src="{% static 'js/components/Favorites.js'%}"></script>
+    <script src="{% static 'js/config/config.js'%}"></script>
+    <script src="{% static 'js/components/CardList.js'%}"></script>
+    <script src="{% static 'js/components/Header.js'%}"></script>
+    <script src="{% static 'js/api/Api.js'%}"></script>
+    {% if user.is_authenticated %}
+        <script src="{% static 'indexAuth.js'%}"></script>
+    {% else %}
+        <script src="{% static 'indexNotAuth.js'%}"></script>
+    {% endif %}
+{% endblock js %}

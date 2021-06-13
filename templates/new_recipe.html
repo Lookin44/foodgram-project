@@ -5,14 +5,11 @@
     <link rel="stylesheet" href="{% static 'pages/form.css' %}">
 {% endblock static %}
 {% block content %}
-{% include 'header.html' with new_recipe=True %}
-
+    {% include 'header.html' with new_recipe=True %}
 <main class="main container">
-
     <div class="main__header">
         <h1 class="main__title">Создание рецепта</h1>
     </div>
-
     <div class="form-container">
         <form class="form" method="post" enctype="multipart/form-data">
             {% csrf_token %}
@@ -23,7 +20,6 @@
                     <span class="form__error"></span>
                 </div>
             </div>
-
             <div class="form__group">
                 <p class="form__label">Теги</p>
                 <div class="form__field-group">
@@ -37,34 +33,24 @@
                     </div>
                     <span class="form__error">{{ form.tags.errors }}</span>
                 </div>
-
             </div>
-
             <div class="form__group">
                 <label for="nameIngredient" class="form__label">Ингредиенты</label>
-
                 <div class="form__field-group">
-
                     <div class="form__field-group-ingredientes">
-
                         <div class="form__dropdown">
                             <input type="text" id="nameIngredient" class="form__input">
                             <div class="form__dropdown-items"></div>
                         </div>
-
                         <input type="number" id="cantidad" class="form__input" min="0">
-
                         <label for="cantidad" class="form__label" id="cantidadVal">шт.</label>
                     </div>
                     <div class="form__field-group-ingredientes-container">
-
                     </div>
-
                     <span class="form__ingredient-link" id="addIng">Добавить ингредиент</span>
                     <span class="form__error"></span>
                 </div>
             </div>
-
             <div class="form__group">
                 <label for="id_time" class="form__label">Время приготовления</label>
                 <div class="form__field-group form__field-group_time">
@@ -73,7 +59,6 @@
                     <span class="form__error"></span>
                 </div>
             </div>
-
             <div class="form__group">
                 <label for="id_description" class="form__label">Описание</label>
                 <div class="form__field-group">
@@ -81,7 +66,6 @@
                     <span class="form__error"></span>
                 </div>
             </div>
-
             <div class="form__group">
                 <span class="form__label">Загрузить фото</span>
                 <div class="form__field-group">
@@ -89,11 +73,9 @@
                     <span class="form__error"></span>
                 </div>
             </div>
-
             <div class="form__footer">
                 <button class="button button_style_blue">Создать рецепт</button>
             </div>
-
         </form>
     </div>
 </main>

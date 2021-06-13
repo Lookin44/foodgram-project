@@ -11,7 +11,6 @@ def is_favorite(request, recipe):
         user=request.user, recipe=recipe
     ).exists():
         return True
-
     return False
 
 
@@ -21,7 +20,6 @@ def is_follower(request, profile):
         user=request.user, author=profile
     ).exists():
         return True
-
     return False
 
 
@@ -31,7 +29,6 @@ def is_in_purchases(request, recipe):
         user=request.user, recipe=recipe
     ).exists():
         return True
-
     return False
 
 

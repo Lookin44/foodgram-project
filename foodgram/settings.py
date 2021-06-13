@@ -1,9 +1,11 @@
 import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = 'django-insecure-(k2!d15rx(@f8n-b9us=c(m+v-(g3x51yku9x)qv7910vvsbqy'
+SECRET_KEY = os.getenv('DJANGO_KEY')
 
 DEBUG = True
 
@@ -37,6 +39,7 @@ ROOT_URLCONF = 'foodgram.urls'
 TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 INCLUDE_DIR = os.path.join(BASE_DIR, 'templates', 'include')
 ABOUT_DIR = os.path.join(BASE_DIR, 'templates', 'about')
+REGISTRATION_DIR = os.path.join(BASE_DIR, 'templates', 'registration')
 
 TEMPLATES = [
     {
@@ -44,7 +47,8 @@ TEMPLATES = [
         'DIRS': [
             TEMPLATES_DIR,
             ABOUT_DIR,
-            INCLUDE_DIR
+            INCLUDE_DIR,
+            REGISTRATION_DIR,
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -110,3 +114,11 @@ LOGIN_REDIRECT_URL = 'index'
 LOGOUT_REDIRECT_URL = 'index'
 
 ACCOUNT_SIGNUP_PASSWORD_VERIFICATION = False
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
