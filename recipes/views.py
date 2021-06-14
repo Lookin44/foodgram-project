@@ -8,10 +8,10 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
-from .form import RecipeCreateForm, RecipeForm
+from .form import RecipeForm
+from .maintenance import get_ingredients, get_tags_for_edit
 from .models import (Amount, Favorite, Ingredient, Recipe, ShopList,
                      Subscription, Tag, User)
-from .maintenance import get_ingredients, get_tags_for_edit
 
 
 def index(request):
@@ -40,8 +40,7 @@ def index(request):
     return render(request, 'index.html', context)
 
 
-def profile(request, username):
-    follow_button = False
+def profile_view(request, username):
     tags_list = request.GET.getlist('filters')
 
     if not tags_list:
@@ -56,6 +55,7 @@ def profile(request, username):
     ).select_related(
         'author'
     ).distinct()
+    follow_button = False
 
     if request.user.is_authenticated and request.user != profile:
         follow_button = True
@@ -63,14 +63,12 @@ def profile(request, username):
     paginator = Paginator(recipes_profile, 6)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-    context = {
-        'paginator': paginator,
-        'page': page,
-        'profile': profile,
-        'follow_button': follow_button,
-        'all_tags': all_tags,
-        'tags_list': tags_list
-    }
+    context = {'paginator': paginator,
+               'page': page,
+               'profile': profile,
+               'follow_button': follow_button,
+               'all_tags': all_tags,
+               'tags_list': tags_list}
     return render(request, 'profile.html', context)
 
 
@@ -82,88 +80,82 @@ def recipe_view(request, recipe_id):
 
 def ingredients(request):
     text = request.GET['query']
-    ingredients = Ingredient.objects.filter(title__istartswith=text)
+    ingredients_list = Ingredient.objects.filter(title__istartswith=text)
     ing_list = []
-    for ing in ingredients:
-        ing_dict = {}
-        ing_dict['title'] = ing.title
-        ing_dict['dimension'] = ing.dimension
-        ing_list.append(ing_dict)
+    for ing in ingredients_list:
+        ingredient_dict = dict()
+        ingredient_dict['title'] = ing.title
+        ingredient_dict['dimension'] = ing.dimension
+        ing_list.append(ingredient_dict)
     return JsonResponse(ing_list, safe=False)
 
 
-@login_required
+@login_required()
 def new_recipe(request):
-    if request.method == 'POST':
-        form = RecipeCreateForm(
-            request.POST or None,
-            files=request.FILES or None
+    form = RecipeForm(request.POST or None, files=request.FILES or None)
+    all_tags = Tag.objects.all()
+    tags_post = get_tags_for_edit(request)
+    new = True
+    if not form.is_valid():
+        context = {'form': form, 'all_tags': all_tags, 'new': new}
+        return render(request, 'new_recipe.html', context)
+    recipe = form.save(commit=False)
+    recipe.author = request.user
+    recipe.save()
+    ingredients = get_ingredients(request)
+    for title, quantity in ingredients.items():
+        ingredient = Ingredient.objects.get(title=title)
+        ingredient_item = Amount(
+            recipe=recipe,
+            quantity=quantity,
+            ingredient=ingredient
         )
-        if form.is_valid():
-
-            recipe = form.save(commit=False)
-            recipe.author = request.user
-            recipe.save()
-            ingredients = get_ingredients(request)
-            for title, quantity in ingredients.items():
-                ingredient = Ingredient.objects.get(title=title)
-                amount = Amount(
-                    recipe=recipe,
-                    ingredient=ingredient,
-                    quantity=quantity
-                )
-                amount.save()
-
-            form.save_m2m()
-            return redirect('recipe', recipe_id=recipe.id)
-    form = RecipeCreateForm()
-    return render(request, 'new_recipe.html', {'form': form})
+        ingredient_item.save()
+    for i in tags_post:
+        tag = get_object_or_404(Tag, id=i)
+        recipe.tags.add(tag)
+    form.save_m2m()
+    return redirect('index')
 
 
 @login_required
 def recipe_edit(request, recipe_id):
     recipe = get_object_or_404(Recipe, pk=recipe_id)
-    author = get_object_or_404(User, id=recipe.author_id)
     all_tags = Tag.objects.all()
-    recipe_tags = recipe.tags.values_list('value', flat=True)
-
-    if request.user != author:
+    image_name = recipe.image.name.split('/')[1]
+    if request.user != recipe.author:
         return redirect('recipe', recipe_id=recipe_id)
 
-    if request.method == 'POST':
+    form = RecipeForm(
+        request.POST,
+        files=request.FILES or None,
+        instance=recipe
+    )
+    if form.is_valid():
+        my_recipe = form.save(commit=False)
+        my_recipe.author = request.user
+        my_recipe.save()
         new_tags = get_tags_for_edit(request)
-        form = RecipeForm(
-            request.POST,
-            files=request.FILES or None,
-            instance=recipe
-        )
-
-        if form.is_valid():
-            my_recipe = form.save(commit=False)
-            my_recipe.author = request.user
-            my_recipe.save()
-            my_recipe.recipe_amount.all().delete()
-            ingredients = get_ingredients(request)
-            for title, quantity in ingredients.items():
-                ingredient = Ingredient.objects.get(title=title)
-                amount = Amount(
-                    recipe=my_recipe,
-                    ingredient=ingredient,
-                    quantity=quantity
-                )
-                amount.save()
-
-            my_recipe.tags.set(new_tags)
-            return redirect('recipe', recipe_id=recipe.id)
-
+        my_recipe.recipe_amount.all().delete()
+        ingredients = get_ingredients(request)
+        for title, quantity in ingredients.items():
+            ingredient = get_object_or_404(Ingredient, title=title)
+            amount = Amount(
+                recipe=my_recipe,
+                ingredient=ingredient,
+                quantity=quantity
+            )
+            amount.save()
+        my_recipe.tags.set(new_tags)
+        return redirect('recipe', recipe_id=recipe.id)
     form = RecipeForm(instance=recipe)
     context = {
         'form': form,
         'recipe': recipe,
         'all_tags': all_tags,
-        'recipe_tags': recipe_tags,
+        'image_name': image_name
     }
-    return render(request, 'recipe_edit.html', context)
+    return render(request, 'new_recipe.html', context)
 
 
 @login_required

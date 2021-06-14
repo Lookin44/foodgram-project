@@ -14,9 +14,10 @@ const defineInitialIndex = function () {
     const ingredients = ingredientsContainer.querySelectorAll('.form__field-item-ingredient')
     if (ingredients.length === 0) { return 1 }
     const data = Array.from(ingredients).map(item => {
-        if (!item.getAttribute('id')) { return 0 }
-        if (!item.getAttribute('id').split('_')[1]) { return 0 }
-        return Number(item.getAttribute('id').split('_')[1])
+        const el = item.querySelector('.ing_counter');
+        if (!el.getAttribute('id')) { return 0 }
+        if (!el.getAttribute('id').split('_')[1]) { return 0 }
+        return Number(el.getAttribute('id').split('_')[1])
     })
     data.sort((a, b) => a-b)
     return data[data.length - 1] + 1
@@ -44,7 +45,7 @@ function Ingredients() {
                              <input id="valueIngredient_${cur}" name="valueIngredient_${cur}" type="hidden" value="${data.value}">
                              <input id="unitsIngredient_${cur}" name="unitsIngredient_${cur}" type="hidden" value="${data.units}">`;
             cur++;
-            
+
             ingredientsContainer.appendChild(elem);
         }
     };
@@ -98,6 +99,10 @@ const cbEventInput = (elem) => {
 
 const eventInput = debouncing(cbEventInput, 1000);
 
+document.querySelector('.form__file').onchange = function() {
+    document.querySelector('.form__filename').textContent = this.files[0].name;
+}
+
 // вешаем апи
 nameIngredient.addEventListener('input', eventInput);
 const ingredients = Ingredients();
@@ -105,5 +110,4 @@ const ingredients = Ingredients();
 formDropdownItems.addEventListener('click', ingredients.dropdown);
 // вешаем слушатель на кнопку
 addIng.addEventListener('click', ingredients.addIngredient);
-
 
