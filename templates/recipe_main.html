@@ -29,7 +29,11 @@
                 {% endif %}
                 </div>
             </div>
-            {% include 'tags.html' %}
+            <ul class="single-card__items">
+                {% for tag in recipe.tags.all %}
+                    <li class="single-card__item"><span class="badge badge_style_{{ tag.style }}">{{ tag.name }}</span></li>
+                {% endfor %}
+            </ul>
             <div class="single-card__items single-card__items_column">
                 <p class="single-card__text"><span class="icon-time"></span>&#160;&#160;{{ recipe.cooking_time }}&#160;мин</p>
                 <ul class="single-card__items">

@@ -8,7 +8,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = os.getenv('DJANGO_KEY')
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
@@ -41,6 +41,7 @@ TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 INCLUDE_DIR = os.path.join(BASE_DIR, 'templates', 'include')
 ABOUT_DIR = os.path.join(BASE_DIR, 'templates', 'about')
 REGISTRATION_DIR = os.path.join(BASE_DIR, 'templates', 'registration')
+ERROR_DIR = os.path.join(BASE_DIR, 'templates', 'error')
 
 TEMPLATES = [
     {
@@ -50,6 +51,7 @@ TEMPLATES = [
             ABOUT_DIR,
             INCLUDE_DIR,
             REGISTRATION_DIR,
+            ERROR_DIR,
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -66,6 +68,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
+# Переведу базу в PostgreSQL как только пройду первую часть ревью
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',

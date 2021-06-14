@@ -9,16 +9,18 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
 from .form import RecipeForm
-from .maintenance import get_ingredients, get_tags_for_edit
+from .maintenance import get_ingredients
 from .models import (Amount, Favorite, Ingredient, Recipe, ShopList,
                      Subscription, Tag, User)
 
 
 def index(request):
-    tags_list = request.GET.getlist('filters')
+    tags_list = request.GET.getlist('tags')
 
     if not tags_list:
         tags_list = ['breakfast', 'lunch', 'dinner']
+
+    all_tags = Tag.objects.all()
 
     recipe_list = Recipe.objects.filter(
         tags__value__in=tags_list
@@ -27,8 +29,6 @@ def index(request):
     ).prefetch_related(
         'tags'
     ).distinct()
-
-    all_tags = Tag.objects.all()
 
     paginator = Paginator(recipe_list, 6)
     page_number = request.GET.get('page')
@@ -41,13 +41,15 @@ def index(request):
 
 
 def profile_view(request, username):
-    tags_list = request.GET.getlist('filters')
+    tags_list = request.GET.getlist('tags')
 
     if not tags_list:
         tags_list = ['breakfast', 'lunch', 'dinner']
 
     all_tags = Tag.objects.all()
+
     profile = get_object_or_404(User, username=username)
+
     recipes_profile = Recipe.objects.filter(
         author=profile
     ).filter(
@@ -55,6 +57,7 @@ def profile_view(request, username):
     ).select_related(
         'author'
     ).distinct()
+
     follow_button = False
 
     if request.user.is_authenticated and request.user != profile:
@@ -79,82 +82,66 @@ def recipe_view(request, recipe_id):
 
 
 def ingredients(request):
-    text = request.GET['query']
-    ingredients_list = Ingredient.objects.filter(title__istartswith=text)
-    ing_list = []
-    for ing in ingredients_list:
-        ingredient_dict = dict()
-        ingredient_dict['title'] = ing.title
-        ingredient_dict['dimension'] = ing.dimension
-        ing_list.append(ingredient_dict)
-    return JsonResponse(ing_list, safe=False)
+    text = request.GET.get('query')
+    if text:
+        ingredient_list = list(Ingredient.objects.filter(
+            title__istartswith=text).values())
+        return JsonResponse(ingredient_list, safe=False)
+    else:
+        raise ValueError('error: empty query')
 
 
 @login_required()
 def new_recipe(request):
     form = RecipeForm(request.POST or None, files=request.FILES or None)
-    all_tags = Tag.objects.all()
-    tags_post = get_tags_for_edit(request)
-    new = True
-    if not form.is_valid():
-        context = {'form': form, 'all_tags': all_tags, 'new': new}
-        return render(request, 'new_recipe.html', context)
-    recipe = form.save(commit=False)
-    recipe.author = request.user
-    recipe.save()
-    ingredients = get_ingredients(request)
-    for title, quantity in ingredients.items():
-        ingredient = Ingredient.objects.get(title=title)
-        ingredient_item = Amount(
-            recipe=recipe,
-            quantity=quantity,
-            ingredient=ingredient
-        )
-        ingredient_item.save()
-    for i in tags_post:
-        tag = get_object_or_404(Tag, id=i)
-        recipe.tags.add(tag)
-    form.save_m2m()
-    return redirect('index')
+
+    if form.is_valid():
+        recipe = form.save(commit=False)
+        recipe.author = request.user
+        recipe.save()
+        ingredients_add = get_ingredients(request)
+        for title, quantity in ingredients_add.items():
+            ingredient = get_object_or_404(Ingredient, title=title)
+            ingredient_item = Amount(recipe=recipe,
+                                     quantity=quantity,
+                                     ingredient=ingredient)
+            ingredient_item.save()
+        form.save_m2m()
+        return redirect('recipe', recipe_id=recipe.id)
+    context = {'form': form, 'new': True}
+    return render(request, 'new_recipe.html', context)
 
 
 @login_required
 def recipe_edit(request, recipe_id):
     recipe = get_object_or_404(Recipe, pk=recipe_id)
-    all_tags = Tag.objects.all()
-    image_name = recipe.image.name.split('/')[1]
+
     if request.user != recipe.author:
         return redirect('recipe', recipe_id=recipe_id)
 
-    form = RecipeForm(
-        request.POST,
-        files=request.FILES or None,
-        instance=recipe
-    )
+    form = RecipeForm(request.POST,
+                      files=request.FILES or None,
+                      instance=recipe)
     if form.is_valid():
-        my_recipe = form.save(commit=False)
-        my_recipe.author = request.user
-        my_recipe.save()
-        new_tags = get_tags_for_edit(request)
-        my_recipe.recipe_amount.all().delete()
-        ingredients = get_ingredients(request)
-        for title, quantity in ingredients.items():
+        change_recipe = form.save(commit=False)
+        change_recipe.author = request.user
+        change_recipe.save()
+        change_recipe.recipe_amount.all().delete()
+        ingredients_new = get_ingredients(request)
+        for title, quantity in ingredients_new.items():
             ingredient = get_object_or_404(Ingredient, title=title)
-            amount = Amount(
-                recipe=my_recipe,
-                ingredient=ingredient,
-                quantity=quantity
-            )
+            amount = Amount(recipe=change_recipe,
+                            ingredient=ingredient,
+                            quantity=quantity)
             amount.save()
-        my_recipe.tags.set(new_tags)
+        form.save_m2m()
         return redirect('recipe', recipe_id=recipe.id)
+
     form = RecipeForm(instance=recipe)
-    context = {
-        'form': form,
-        'recipe': recipe,
-        'all_tags': all_tags,
-        'image_name': image_name
-    }
+    context = {'form': form,
+               'recipe': recipe,
+               'new': False,
+               'image_name': recipe.image.name.split('/')[1]}
     return render(request, 'new_recipe.html', context)
 
 
@@ -170,15 +157,19 @@ def recipe_delete(request, recipe_id):
 
 @login_required
 def favorites(request):
-    tags_list = request.GET.getlist('filters')
+    tags_list = request.GET.getlist('tags')
+
     if not tags_list:
         tags_list = ['breakfast', 'lunch', 'dinner']
+
     all_tags = Tag.objects.all()
+
     recipe_list = Recipe.objects.filter(
         favorite_recipes__user=request.user
     ).filter(
         tags__value__in=tags_list
     ).distinct()
+
     paginator = Paginator(recipe_list, 6)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -201,10 +192,12 @@ def my_follow(request):
         )
     )
     recipe = {}
+
     for sub in subscriptions:
         recipe[sub] = Recipe.objects.filter(
             author=sub
         )[:3]
+
     paginator = Paginator(subscriptions, 6)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
@@ -242,7 +235,7 @@ def get_purchases(request):
             else:
                 ing[title] = [quantity, dimension]
     response = HttpResponse(content_type='txt/csv')
-    response['Content-Disposition'] = 'attachment; filename="shop_list.txt"'
+    response['Content-Disposition'] = 'attachment; filename=shop_list.txt"'
     writer = csv.writer(response)
     for key, value in ing.items():
         writer.writerow([f'{key} ({value[1]}) - {value[0]}'])
@@ -307,3 +300,11 @@ def subscriptions(request, author_id):
         if removed:
             return JsonResponse({'success': True})
         return JsonResponse({'success': False})
+
+
+def page_not_found(request, exception):
+    return render(request, '404.html', {'path': request.path}, status=404)
+
+
+def server_error(request):
+    return render(request, '500.html', status=500)

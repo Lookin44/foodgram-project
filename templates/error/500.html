@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %} Ошибка 500 {% endblock %}
+{% block static %}
+{% load static %}
+    <link rel="stylesheet" href="{% static 'pages/index.css' %}">
+{% endblock static %}
+{% block content %}
+    {% include 'header.html'%}
+<body class="body">
+    <main class="main container">
+        <div class="main__header">
+            <h1 class="main__title">Ошибка 500</h1>
+        </div>
+        <p class="lead">Ошибка на сервере, попробуйте обновить страницу или обратиться позже</p>
+        <p class="lead"><a href="{% url 'index' %}">Вернуться на главную</a></p>
+    </main>
+</body>
+{% endblock %}
