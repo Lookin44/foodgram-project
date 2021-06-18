@@ -5,7 +5,6 @@
     <link rel="stylesheet" href="{% static 'pages/shopList.css' %}">
 {% endblock static %}
 {% block content %}
-    {% include 'header.html' with shop_list=True %}
 {% csrf_token %}
 <main class="main container">
     <div class="main__header">
@@ -14,7 +13,7 @@
     <div class="card-list card-list_column">
         <ul class="shopping-list">
             {% for recipe in purchases %}
-                <li class="shopping-list__item" data-id="111">
+                <li class="shopping-list__item" data-id="{{recipe.id}}">
                     <div class="recipe recipe_reverse">
                         {% load thumbnail %}
                         {% thumbnail recipe.image "960x339" as im %}

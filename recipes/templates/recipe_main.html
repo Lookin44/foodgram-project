@@ -5,7 +5,6 @@
     <link rel="stylesheet" href="{% static 'pages/single.css' %}">
 {% endblock static %}
 {% block content %}
-    {% include 'header.html' with index=True %}
 {% csrf_token %}
 {% load recipe_filters %}
 <main class="main container">
@@ -19,13 +18,7 @@
                 <h1 class="single-card__title">{{ recipe.title }}</h1>
                 <div class="single-card__favorite">
                 {% if user.is_authenticated %}
-                    {% if request|is_favorite:recipe %}
-                        <button class="button button_style_none" name="favorites" ><span class="icon-favorite icon-favorite_big icon-favorite_active"></span></button>
-                        <div class="single-card__favorite-tooltip tooltip">Удалить из избранного</div>
-                    {% else %}
-                        <button class="button button_style_none" name="favorites" data-out><span class="icon-favorite icon-favorite_big"></span></button>
-                        <div class="single-card__favorite-tooltip tooltip">Добавить в избранное</div>
-                    {% endif %}
+                    {% include 'buttons/favorite_button.html' with url_now=request.resolver_match.url_name %}
                 {% endif %}
                 </div>
             </div>
@@ -47,16 +40,12 @@
             </div>
             <ul class="single-card__items">
             {% if user.is_authenticated %}
-                {% if not request|is_in_purchases:recipe %}
-                    <li class="single-card__item"><button class="button button_style_blue" name="purchases" data-out><span class="icon-plus button-icon"></span> Добавить в покупки</button></li>
-                {% else %}
-                    <li class="single-card__item"><button class="button button_style_blue-outline" name="purchases"><span class="icon-check button-icon"></span> Рецепт добавлен</button></li>
-                {% endif%}
+                {% include 'buttons/purchases_button.html' with url_now=request.resolver_match.url_name %}
                 {% if not owner %}
                     {% if not request|is_follower:profile %}
-                        <li class="single-card__item"><button class="button button_style_light-blue button_size_subscribe" name="subscribe" data-out="">Подписаться на автора</button></li>
+                        <li class="single-card__item">{% include 'buttons/follow_button.html' with text='Подписаться на автора' %}</li>
                     {% else %}
-                        <li class="single-card__item"><button class="button button_style_light-blue button_size_subscribe" name="subscribe">Отписаться от автора</button></li>
+                        <li class="single-card__item">{% include 'buttons/follow_button.html' with text='Отписаться от автора' %}</li>
                     {% endif %}
                 {% endif %}
             {% endif %}

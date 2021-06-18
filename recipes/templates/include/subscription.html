@@ -1,0 +1,32 @@
+{% load recipe_filters %}
+<div class="card-user" data-author={{ reading_to.id }}>
+    <div class="card-user__header">
+        <h2 class="card-user__title">{{ reading_to.first_name }}</h2>
+    </div>
+    <div class="card-user__body">
+
+        <ul class="card-user__items">
+            {% for recipe in reading_to.recipes.all %}
+                {% if forloop.counter < 4 %}
+                <li class="card-user__item">
+                    <div class="recipe">
+                        {% load thumbnail %}
+                        {% thumbnail recipe.image "960x339" as im %}
+                            <img src="{{ im.url }}" class="recipe__image">
+                        {% endthumbnail %}
+                        <h3 class="recipe__title">{{ recipe.title }}</h3>
+                        <p class="recipe__text"><span class="icon-time"></span> {{ recipe.cooking_time }} мин.</p>
+                    </div>
+                </li>
+                {% endif %}
+            {% endfor%}
+            {% if reading_to.recipes.count > 3 %}<li class="card-user__item">
+                <a href="{% url 'profile' username=reading_to.username %}" class="card-user__link link">Еще {{ reading_to.recipes.count|add:-3 }} рецепт{{ reading_to.recipes.count|correct_declension:3 }}:</a>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+    <div class="card-user__footer">
+        {% include 'buttons/follow_button.html' with text='Отписаться' %}
+    </div>
+</div>

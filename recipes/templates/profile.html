@@ -5,30 +5,29 @@
     <link rel="stylesheet" href="{% static 'pages/index.css' %}">
 {% endblock static %}
 {% block content %}
-    {% include 'header.html' with index=True %}
 {% load recipe_filters %}
 {% csrf_token %}
  <main class="main container">
     <div class="main__header">
         <h1 class="main__title">{{ profile.first_name }}</h1>
-        {% include 'tag.html' with tags_list=tags_list all_tags=all_tags %}
+        {% include 'include/tag.html' with tags_list=tags_list all_tags=all_tags %}
     </div>
-    {% if follow_button %}
+    {% if user.is_authenticated and request.user != profile %}
         <div class="author-subscribe" data-author={{ profile.id }}>
             {% if not request|is_follower:profile %}
-                <p style="padding: 0 0 2em 0;"><button class="button button_style_light-blue button_size_subscribe" name="subscribe" data-out>Подписаться на автора</button></p>
+                <p style="padding: 0 0 2em 0;">{% include 'buttons/follow_button.html' with text='Подписаться на автора' %}</p>
             {% else %}
-                <p style="padding: 0 0 2em 0;"><button class="button button_style_light-blue button_size_subscribe" name="subscribe" >Отписаться от автора</button></p>
+                <p style="padding: 0 0 2em 0;">{% include 'buttons/follow_button.html' with text='Отписаться от автора' %}</p>
             {% endif %}
         </div>
     {% endif %}
     <div class="card-list">
         {% for recipe in page %}
-            {% include 'recipe.html' with recipe=recipe %}
+            {% include 'include/recipe.html' with recipe=recipe %}
         {% endfor %}
     </div>
     {% if page.has_other_pages %}
-        {% include 'pagination.html' with items=page paginator=paginator tags_for_page=tags_list%}
+        {% include 'include/pagination.html' with items=page paginator=paginator tags_for_page=tags_list%}
     {% endif %}
 </main>
 {% endblock content %}

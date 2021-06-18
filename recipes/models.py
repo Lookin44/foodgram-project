@@ -65,6 +65,8 @@ class Favorite(models.Model):
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE,
                              related_name='favorites')
+    constraints = [models.UniqueConstraint(fields=['recipe', 'user'],
+                                           name='UniqueFavorite')]
 
     def __str__(self):
         return self.recipe.title
@@ -77,9 +79,11 @@ class Subscription(models.Model):
     author = models.ForeignKey(User,
                                on_delete=models.CASCADE,
                                related_name='following')
+    constraints = [models.UniqueConstraint(fields=['user', 'author'],
+                                           name='UniqueSubscription')]
 
     def __str__(self):
-        return self.user.username
+        return f'{self.user} подписан на {self.author}'
 
     def follower(self):
         return self.user.username
@@ -95,6 +99,8 @@ class ShopList(models.Model):
     recipe = models.ForeignKey(Recipe,
                                on_delete=models.CASCADE,
                                related_name='shop_list')
+    constraints = [models.UniqueConstraint(fields=['user', 'recipe'],
+                                           name='UniqueShopList')]
 
     def __str__(self):
         return self.recipe.title

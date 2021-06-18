@@ -3,22 +3,27 @@ import json
 
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Count
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
+from foodgram.settings import PAGINATION_PAGE_SIZE
+
 from .form import RecipeForm
-from .maintenance import get_ingredients
+from .utils import get_ingredients, get_all_tags
 from .models import (Amount, Favorite, Ingredient, Recipe, ShopList,
                      Subscription, Tag, User)
+
+
+JSON_FALSE = JsonResponse({'success': False})
+JSON_TRUE = JsonResponse({'success': True})
 
 
 def index(request):
     tags_list = request.GET.getlist('tags')
 
     if not tags_list:
-        tags_list = ['breakfast', 'lunch', 'dinner']
+        tags_list = get_all_tags()
 
     all_tags = Tag.objects.all()
 
@@ -30,7 +35,7 @@ def index(request):
         'tags'
     ).distinct()
 
-    paginator = Paginator(recipe_list, 6)
+    paginator = Paginator(recipe_list, PAGINATION_PAGE_SIZE)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     context = {'paginator': paginator,
@@ -44,32 +49,21 @@ def profile_view(request, username):
     tags_list = request.GET.getlist('tags')
 
     if not tags_list:
-        tags_list = ['breakfast', 'lunch', 'dinner']
+        tags_list = get_all_tags()
 
     all_tags = Tag.objects.all()
 
     profile = get_object_or_404(User, username=username)
 
-    recipes_profile = Recipe.objects.filter(
-        author=profile
-    ).filter(
-        tags__value__in=tags_list
-    ).select_related(
-        'author'
-    ).distinct()
+    recipes_profile = profile.recipes.filter(author=profile).filter(
+        tags__value__in=tags_list).distinct()
 
-    follow_button = False
-
-    if request.user.is_authenticated and request.user != profile:
-        follow_button = True
-
-    paginator = Paginator(recipes_profile, 6)
+    paginator = Paginator(recipes_profile, PAGINATION_PAGE_SIZE)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     context = {'paginator': paginator,
                'page': page,
                'profile': profile,
-               'follow_button': follow_button,
                'all_tags': all_tags,
                'tags_list': tags_list}
     return render(request, 'profile.html', context)
@@ -83,12 +77,9 @@ def recipe_view(request, recipe_id):
 
 def ingredients(request):
     text = request.GET.get('query')
-    if text:
-        ingredient_list = list(Ingredient.objects.filter(
-            title__istartswith=text).values())
-        return JsonResponse(ingredient_list, safe=False)
-    else:
-        raise ValueError('error: empty query')
+    ingredient_list = list(Ingredient.objects.filter(
+        title__istartswith=text).values())
+    return JsonResponse(ingredient_list, safe=False)
 
 
 @login_required()
@@ -106,6 +97,9 @@ def new_recipe(request):
                                      quantity=quantity,
                                      ingredient=ingredient)
             ingredient_item.save()
+        if not ingredients_add:
+            return render(request, 'new_recipe.html',
+                          {'form': form, 'new': True})
         form.save_m2m()
         return redirect('recipe', recipe_id=recipe.id)
     context = {'form': form, 'new': True}
@@ -134,14 +128,17 @@ def recipe_edit(request, recipe_id):
                             ingredient=ingredient,
                             quantity=quantity)
             amount.save()
+        if not ingredients_new:
+            return render(request, 'new_recipe.html', {'form': form,
+                                                       'recipe': recipe,
+                                                       'new': False})
         form.save_m2m()
         return redirect('recipe', recipe_id=recipe.id)
 
     form = RecipeForm(instance=recipe)
     context = {'form': form,
                'recipe': recipe,
-               'new': False,
-               'image_name': recipe.image.name.split('/')[1]}
+               'new': False}
     return render(request, 'new_recipe.html', context)
 
 
@@ -160,7 +157,7 @@ def favorites(request):
     tags_list = request.GET.getlist('tags')
 
     if not tags_list:
-        tags_list = ['breakfast', 'lunch', 'dinner']
+        tags_list = get_all_tags()
 
     all_tags = Tag.objects.all()
 
@@ -170,70 +167,62 @@ def favorites(request):
         tags__value__in=tags_list
     ).distinct()
 
-    paginator = Paginator(recipe_list, 6)
+    paginator = Paginator(recipe_list, PAGINATION_PAGE_SIZE)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-    context = {
-        'paginator': paginator,
-        'page': page,
-        'all_tags': all_tags,
-        'tags_list': tags_list
-    }
+    context = {'paginator': paginator,
+               'page': page,
+               'all_tags': all_tags,
+               'tags_list': tags_list}
     return render(request, 'my_favorite.html', context)
 
 
 @login_required
 def my_follow(request):
-    subscriptions = User.objects.filter(
-        following__user=request.user
-    ).annotate(
-        recipe_count=Count(
-            'recipes'
-        )
-    )
-    recipe = {}
+    reading_to = User.objects.prefetch_related('recipes').filter(
+        following__user=request.user)
 
-    for sub in subscriptions:
-        recipe[sub] = Recipe.objects.filter(
-            author=sub
-        )[:3]
-
-    paginator = Paginator(subscriptions, 6)
+    paginator = Paginator(reading_to, PAGINATION_PAGE_SIZE)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
-    context = {
-        'paginator': paginator,
-        'page': page,
-        'recipe': recipe
-    }
+    context = {'paginator': paginator,
+               'page': page,
+               'reading_to': reading_to}
     return render(request, 'my_follow.html', context)
 
 
 @login_required
+@require_http_methods(['GET', 'DELETE'])
 def shop_list(request):
-    if request.GET:
+    if request.method == 'DELETE':
         recipe_id = request.GET.get('recipe_id')
-        ShopList.objects.get(recipe__id=recipe_id).delete()
-    purchases = Recipe.objects.filter(shop_list__user=request.user)
-    context = {'purchases': purchases}
-    return render(request, 'shop_list.html', context)
+        removed = ShopList.objects.get(recipe__id=recipe_id).delete()
+        if removed:
+            return JSON_TRUE
+        return JSON_FALSE
+    if request.method == 'GET':
+        purchases = Recipe.objects.filter(shop_list__user=request.user)
+        context = {'purchases': purchases}
+        return render(request, 'shop_list.html', context)
 
 
 @login_required
 def get_purchases(request):
-    recipes = Recipe.objects.filter(shop_list__user=request.user)
+    recipes = Recipe.objects.filter(
+        shop_list__user=request.user
+    ).values_list('ingredients__title',
+                  'recipe_amount__quantity',
+                  'ingredients__dimension',)
     ing = {}
     for recipe in recipes:
-        ingredients = recipe.ingredients.values_list('title', 'dimension')
-        amount = recipe.recipe_amount.values_list('quantity', flat=True)
-        for num in range(len(ingredients)):
-            title = ingredients[num][0]
-            dimension = ingredients[num][1]
-            quantity = amount[num]
-            if title in ing.keys():
-                ing[title] = [ing[title][0] + quantity, dimension]
-            else:
-                ing[title] = [quantity, dimension]
+        title = recipe[0]
+        quantity = recipe[1]
+        dimension = recipe[2]
+        if title in ing.keys():
+            ing[title] = [ing[title][0] + dimension, quantity]
+        else:
+            ing[title] = [dimension, quantity]
+
     response = HttpResponse(content_type='txt/csv')
     response['Content-Disposition'] = 'attachment; filename=shop_list.txt"'
     writer = csv.writer(response)
@@ -251,15 +240,15 @@ def change_favorites(request, recipe_id):
         obj, created = Favorite.objects.get_or_create(user=request.user,
                                                       recipe=recipe)
         if not created:
-            return JsonResponse({'success': False})
-        return JsonResponse({'success': True})
+            return JSON_FALSE
+        return JSON_TRUE
     elif request.method == 'DELETE':
         recipe = get_object_or_404(Recipe, pk=recipe_id)
         removed = Favorite.objects.filter(user=request.user,
                                           recipe=recipe).delete()
         if removed:
-            return JsonResponse({'success': True})
-        return JsonResponse({'success': False})
+            return JSON_TRUE
+        return JSON_FALSE
 
 
 @login_required
@@ -271,15 +260,15 @@ def purchases(request, recipe_id):
         obj, created = ShopList.objects.get_or_create(user=request.user,
                                                       recipe=recipe)
         if not created:
-            return JsonResponse({'success': False})
-        return JsonResponse({'success': True})
+            return JSON_FALSE
+        return JSON_TRUE
     elif request.method == 'DELETE':
         recipe = get_object_or_404(Recipe, pk=recipe_id)
         removed = ShopList.objects.filter(user=request.user,
                                           recipe=recipe).delete()
         if removed:
-            return JsonResponse({'success': True})
-        return JsonResponse({'success': False})
+            return JSON_TRUE
+        return JSON_FALSE
 
 
 @login_required
@@ -291,15 +280,15 @@ def subscriptions(request, author_id):
         obj, created = Subscription.objects.get_or_create(user=request.user,
                                                           author=author)
         if request.user == author or not created:
-            return JsonResponse({'success': False})
-        return JsonResponse({'success': True})
+            return JSON_FALSE
+        return JSON_TRUE
     elif request.method == 'DELETE':
         author = get_object_or_404(User, id=author_id)
         removed = Subscription.objects.filter(user=request.user,
                                               author=author).delete()
         if removed:
-            return JsonResponse({'success': True})
-        return JsonResponse({'success': False})
+            return JSON_TRUE
+        return JSON_FALSE
 
 
 def page_not_found(request, exception):

@@ -1,11 +1,10 @@
 {% extends 'base.html' %}
 {% block title %}Технологии{% endblock %}
+{% block static %}
 {% load static %}
+    <link rel="stylesheet" href="{% static 'pages/index.css' %}">
+{% endblock static %}
 {% block content %}
-    {% include 'header.html' %}
-
-<link rel="stylesheet" href="{% static 'pages/index.css' %}">
-
 <body class="body">
     <main class="main container">
         <div class="main__header">

@@ -10,10 +10,11 @@
     {% endblock static %}
 </head>
 <body class="body">
-        {% block content %}
-        {% endblock content %}
-        {% include 'footer.html' %}
-        {% block js %}
-        {% endblock js %}
+    {% include 'header.html' %}
+    {% block content %}
+    {% endblock content %}
+    {% include 'footer.html' %}
+    {% block js %}
+    {% endblock js %}
 </body>
 </html>

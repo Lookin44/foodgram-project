@@ -40,8 +40,9 @@ ROOT_URLCONF = 'foodgram.urls'
 TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 INCLUDE_DIR = os.path.join(BASE_DIR, 'templates', 'include')
 ABOUT_DIR = os.path.join(BASE_DIR, 'templates', 'about')
-REGISTRATION_DIR = os.path.join(BASE_DIR, 'templates', 'registration')
-ERROR_DIR = os.path.join(BASE_DIR, 'templates', 'error')
+REGISTRATION_DIR = os.path.join(BASE_DIR, 'templates',
+                                '../users/templates/registration')
+ERROR_DIR = os.path.join(BASE_DIR, 'templates', '../recipes/templates/error')
 
 TEMPLATES = [
     {
@@ -60,7 +61,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'recipes.get_shop_list.get_shop_list'
+                'recipes.utils.get_shop_list'
             ],
         },
     },
@@ -126,3 +127,5 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+
+PAGINATION_PAGE_SIZE = 6
