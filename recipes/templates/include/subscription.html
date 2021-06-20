@@ -1,13 +1,12 @@
 {% load recipe_filters %}
-<div class="card-user" data-author={{ reading_to.id }}>
+<div class="card-user" data-author={{ subscription.id }}>
     <div class="card-user__header">
-        <h2 class="card-user__title">{{ reading_to.first_name }}</h2>
+        <h2 class="card-user__title">{{ subscription.first_name }}</h2>
     </div>
     <div class="card-user__body">
 
         <ul class="card-user__items">
-            {% for recipe in reading_to.recipes.all %}
-                {% if forloop.counter < 4 %}
+            {% for recipe in subscription.recipes.all|slice:3 %}
                 <li class="card-user__item">
                     <div class="recipe">
                         {% load thumbnail %}
@@ -18,10 +17,9 @@
                         <p class="recipe__text"><span class="icon-time"></span> {{ recipe.cooking_time }} мин.</p>
                     </div>
                 </li>
-                {% endif %}
             {% endfor%}
-            {% if reading_to.recipes.count > 3 %}<li class="card-user__item">
-                <a href="{% url 'profile' username=reading_to.username %}" class="card-user__link link">Еще {{ reading_to.recipes.count|add:-3 }} рецепт{{ reading_to.recipes.count|correct_declension:3 }}:</a>
+            {% if subscription.recipes.count > 3 %}<li class="card-user__item">
+                <a href="{% url 'profile' username=subscription.username %}" class="card-user__link link">Еще {{ subscription.recipes.count|add:-3 }} {{ subscription.recipes.count|correct_declension:3 }}:</a>
             </li>
             {% endif %}
         </ul>

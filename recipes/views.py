@@ -3,6 +3,7 @@ import json
 
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db.models import Count, Sum
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
@@ -85,21 +86,20 @@ def ingredients(request):
 @login_required()
 def new_recipe(request):
     form = RecipeForm(request.POST or None, files=request.FILES or None)
-
     if form.is_valid():
         recipe = form.save(commit=False)
         recipe.author = request.user
         recipe.save()
         ingredients_add = get_ingredients(request)
+        if not ingredients_add:
+            return render(request, 'new_recipe.html',
+                          {'form': form, 'new': True})
         for title, quantity in ingredients_add.items():
             ingredient = get_object_or_404(Ingredient, title=title)
             ingredient_item = Amount(recipe=recipe,
                                      quantity=quantity,
                                      ingredient=ingredient)
             ingredient_item.save()
-        if not ingredients_add:
-            return render(request, 'new_recipe.html',
-                          {'form': form, 'new': True})
         form.save_m2m()
         return redirect('recipe', recipe_id=recipe.id)
     context = {'form': form, 'new': True}
@@ -122,16 +122,16 @@ def recipe_edit(request, recipe_id):
         change_recipe.save()
         change_recipe.recipe_amount.all().delete()
         ingredients_new = get_ingredients(request)
+        if not ingredients_new:
+            return render(request, 'new_recipe.html', {'form': form,
+                                                       'recipe': recipe,
+                                                       'new': False})
         for title, quantity in ingredients_new.items():
             ingredient = get_object_or_404(Ingredient, title=title)
             amount = Amount(recipe=change_recipe,
                             ingredient=ingredient,
                             quantity=quantity)
             amount.save()
-        if not ingredients_new:
-            return render(request, 'new_recipe.html', {'form': form,
-                                                       'recipe': recipe,
-                                                       'new': False})
         form.save_m2m()
         return redirect('recipe', recipe_id=recipe.id)
 
@@ -148,7 +148,7 @@ def recipe_delete(request, recipe_id):
 
     if request.user == recipe.author:
         recipe.delete()
-        return redirect('profile', username=request.user)
+        return redirect('index')
     return redirect('recipe', recipe_id=recipe_id)
 
 
@@ -179,15 +179,15 @@ def favorites(request):
 
 @login_required
 def my_follow(request):
-    reading_to = User.objects.prefetch_related('recipes').filter(
+    subscription = User.objects.prefetch_related('recipes').filter(
         following__user=request.user)
 
-    paginator = Paginator(reading_to, PAGINATION_PAGE_SIZE)
+    paginator = Paginator(subscription, PAGINATION_PAGE_SIZE)
     page_number = request.GET.get('page')
     page = paginator.get_page(page_number)
     context = {'paginator': paginator,
                'page': page,
-               'reading_to': reading_to}
+               'reading_to': subscription}
     return render(request, 'my_follow.html', context)
 
 
@@ -212,7 +212,10 @@ def get_purchases(request):
         shop_list__user=request.user
     ).values_list('ingredients__title',
                   'recipe_amount__quantity',
-                  'ingredients__dimension',)
+                  'ingredients__dimension')
+    # new_shop_list = Recipe.objects.filter(shop_list__user=request.user).annotate(dimension=Sum('quantity'))
+    # print(recipes)
+    # print(new_shop_list[0].dimension)
     ing = {}
     for recipe in recipes:
         title = recipe[0]

@@ -2,12 +2,10 @@ from .models import ShopList, Tag
 
 
 def get_shop_list(request):
+    shop_list_count = None
     if request.user.is_authenticated:
         shop_list_count = ShopList.objects.filter(
-            user=request.user
-        ).count()
-    else:
-        shop_list_count = None
+            user=request.user).count()
     return {'shop_list_count': shop_list_count}
 
 

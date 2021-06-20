@@ -12,8 +12,8 @@ def is_favorite(request, recipe):
 
 @register.filter
 def is_follower(request, profile):
-    return Subscription.objects.filter(user=request.user, author=profile
-                                       ).exists()
+    return Subscription.objects.filter(
+        user=request.user, author=profile).exists()
 
 
 @register.filter
@@ -30,9 +30,9 @@ def url_with_get(request, number):
 
 @register.filter
 def correct_declension(obj_one, obj_two):
-    remained = str(obj_one - obj_two)
-    if remained[-1] == '1':
-        return ''
-    if remained[-1] in ['2', '3', '4']:
-        return 'а'
-    return 'ов'
+    remained = obj_one - obj_two
+    if remained == 1:
+        return 'рецепт'
+    if remained in [2, 3, 4]:
+        return 'рецепта'
+    return 'рецептов'

@@ -11,8 +11,8 @@
         <h1 class="main__title">Мои подписки</h1>
     </div>
     <div class="card-list">
-    {% for reading_to in page %}
-        {% include 'include/subscription.html' with reading_to=reading_to%}
+    {% for subscription in page %}
+        {% include 'include/subscription.html' with subscription=subscription%}
     {% endfor %}
     </div>
     {% if page.has_other_pages %}

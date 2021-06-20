@@ -28,7 +28,7 @@ class Recipe(models.Model):
                                     auto_now_add=True,
                                     db_index=True)
     title = models.CharField(max_length=200)
-    image = models.ImageField(upload_to='recipes/', null=True, blank=True)
+    image = models.ImageField(upload_to='recipes/', null=True)
     description = models.TextField()
     tags = models.ManyToManyField(Tag, related_name='recipes')
     ingredients = models.ManyToManyField(Ingredient,
@@ -36,7 +36,7 @@ class Recipe(models.Model):
                                          through_fields=('recipe',
                                                          'ingredient')
                                          )
-    cooking_time = models.PositiveIntegerField(null=True, blank=True)
+    cooking_time = models.PositiveIntegerField(null=True)
 
     class Meta:
         ordering = ['-pub_date']
@@ -65,8 +65,10 @@ class Favorite(models.Model):
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE,
                              related_name='favorites')
-    constraints = [models.UniqueConstraint(fields=['recipe', 'user'],
-                                           name='UniqueFavorite')]
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['recipe', 'user'],
+                                               name='UniqueFavorite')]
 
     def __str__(self):
         return self.recipe.title
@@ -79,17 +81,13 @@ class Subscription(models.Model):
     author = models.ForeignKey(User,
                                on_delete=models.CASCADE,
                                related_name='following')
-    constraints = [models.UniqueConstraint(fields=['user', 'author'],
-                                           name='UniqueSubscription')]
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['user', 'author'],
+                                               name='UniqueSubscription')]
 
     def __str__(self):
         return f'{self.user} подписан на {self.author}'
-
-    def follower(self):
-        return self.user.username
-
-    def following(self):
-        return self.author.username
 
 
 class ShopList(models.Model):
@@ -99,8 +97,10 @@ class ShopList(models.Model):
     recipe = models.ForeignKey(Recipe,
                                on_delete=models.CASCADE,
                                related_name='shop_list')
-    constraints = [models.UniqueConstraint(fields=['user', 'recipe'],
-                                           name='UniqueShopList')]
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=['user', 'recipe'],
+                                               name='UniqueShopList')]
 
     def __str__(self):
         return self.recipe.title

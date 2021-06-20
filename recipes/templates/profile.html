@@ -14,10 +14,10 @@
     </div>
     {% if user.is_authenticated and request.user != profile %}
         <div class="author-subscribe" data-author={{ profile.id }}>
-            {% if not request|is_follower:profile %}
-                <p style="padding: 0 0 2em 0;">{% include 'buttons/follow_button.html' with text='Подписаться на автора' %}</p>
+            {% if request|is_follower:profile %}
+                <p style="rabota">{% include 'buttons/follow_button.html' with text='Отписаться от автора' %}</p>
             {% else %}
-                <p style="padding: 0 0 2em 0;">{% include 'buttons/follow_button.html' with text='Отписаться от автора' %}</p>
+                <p style="rabota">{% include 'buttons/follow_button.html' with text='Подписаться на автора' %}</p>
             {% endif %}
         </div>
     {% endif %}

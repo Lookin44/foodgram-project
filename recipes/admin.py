@@ -18,7 +18,7 @@ class IngredientAdmin(admin.ModelAdmin):
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
-    list_display = ('follower', 'following')
+    list_display = ('user', 'author')
 
 
 @admin.register(Tag)
