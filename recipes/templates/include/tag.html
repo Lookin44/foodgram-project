@@ -1,11 +1,10 @@
 {%  load tag_filters %}
 <ul class="tags">
-    {% for tag in all_tags %}
+    {% for tag, options in active_tags.items %}
     <li class="tags__item">
-        <a class="tags__checkbox tags__checkbox_style_{{ tag.style }} {% if tag.value in tags_list %}tags__checkbox_active {% endif %}"
-           href="?{{ request|get_filter_tags:tag}}"
-           id="{{ tag.title }}"></a>
-        <span class="tags__label">{{ tag.name }}</span>
+        <a class="tags__checkbox tags__checkbox_style_{{ options.style }} {% if options.status %} tags__checkbox_active {% endif %}"
+           href="?{{ request|get_filter_tags:tag}}"></a>
+        <span class="tags__label">{{ options.name }}</span>
     </li>
     {% endfor %}
 </ul>

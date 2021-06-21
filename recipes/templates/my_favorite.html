@@ -9,7 +9,7 @@
 <main class="main container">
     <div class="main__header">
         <h1 class="main__title">Избранное</h1>
-        {% include 'include/tag.html' with tags_list=tags_list all_tags=all_tags %}
+        {% include 'include/tag.html' %}
     </div>
     <div class="card-list">
         {% for recipe in page %}

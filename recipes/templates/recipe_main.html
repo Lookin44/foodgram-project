@@ -39,8 +39,8 @@
             <ul class="single-card__items">
             {% if user.is_authenticated %}
                 {% include 'buttons/purchases_button.html' with main_recipe=True %}
-                {% if not owner %}
-                    {% if request|is_follower:profile %}
+                {% if request.user != recipe.author %}
+                    {% if request|is_follower:recipe.author %}
                         <li class="single-card__item">{% include 'buttons/follow_button.html' with text='Отписаться от автора' %}</li>
                     {% else %}
                         <li class="single-card__item">{% include 'buttons/follow_button.html' with text='Подписаться на автора' %}</li>

@@ -10,7 +10,7 @@
  <main class="main container">
     <div class="main__header">
         <h1 class="main__title">{{ profile.first_name }}</h1>
-        {% include 'include/tag.html' with tags_list=tags_list all_tags=all_tags %}
+        {% include 'include/tag.html' %}
     </div>
     {% if user.is_authenticated and request.user != profile %}
         <div class="author-subscribe" data-author={{ profile.id }}>

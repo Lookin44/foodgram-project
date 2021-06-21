@@ -1,6 +1,6 @@
 from django import template
 
-from recipes.utils import get_all_tags
+from recipes.models import Tag
 
 register = template.Library()
 
@@ -8,14 +8,21 @@ register = template.Library()
 @register.filter
 def get_filter_tags(request, tag):
     new_request = request.GET.copy()
+    all_tags = Tag.objects.all()
+    tags_list = request.GET.getlist('tags')
 
-    if not request.GET.getlist('tags'):
-        tags_list = get_all_tags()
+    if not tags_list:
+        for tag_item in all_tags:
+            tags_list.append(tag_item.value)
     else:
         tags_list = new_request.getlist('tags')
-    if tag.value in tags_list:
-        tags_list.remove(tag.value)
+    if tag in tags_list:
+        tags_list.remove(tag)
         new_request.setlist('tags', tags_list)
     else:
-        new_request.appendlist('tags', tag.value)
+        new_request.appendlist('tags', tag)
     return new_request.urlencode()
+
+
+
+

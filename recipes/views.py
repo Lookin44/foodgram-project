@@ -3,7 +3,7 @@ import json
 
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Count, Sum
+from django.db.models import Sum
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
@@ -11,7 +11,7 @@ from django.views.decorators.http import require_http_methods
 from foodgram.settings import PAGINATION_PAGE_SIZE
 
 from .form import RecipeForm
-from .utils import get_ingredients, get_all_tags
+from .utils import get_ingredients, tags_status
 from .models import (Amount, Favorite, Ingredient, Recipe, ShopList,
                      Subscription, Tag, User)
 
@@ -21,15 +21,10 @@ JSON_TRUE = JsonResponse({'success': True})
 
 
 def index(request):
-    tags_list = request.GET.getlist('tags')
-
-    if not tags_list:
-        tags_list = get_all_tags()
-
-    all_tags = Tag.objects.all()
+    active_tags, request_tags = tags_status(request)
 
     recipe_list = Recipe.objects.filter(
-        tags__value__in=tags_list
+        tags__value__in=request_tags
     ).select_related(
         'author'
     ).prefetch_related(
@@ -41,23 +36,16 @@ def index(request):
     page = paginator.get_page(page_number)
     context = {'paginator': paginator,
                'page': page,
-               'all_tags': all_tags,
-               'tags_list': tags_list}
+               'active_tags': active_tags}
     return render(request, 'index.html', context)
 
 
 def profile_view(request, username):
-    tags_list = request.GET.getlist('tags')
-
-    if not tags_list:
-        tags_list = get_all_tags()
-
-    all_tags = Tag.objects.all()
-
+    active_tags, request_tags = tags_status(request)
     profile = get_object_or_404(User, username=username)
 
     recipes_profile = profile.recipes.filter(author=profile).filter(
-        tags__value__in=tags_list).distinct()
+        tags__value__in=active_tags).distinct()
 
     paginator = Paginator(recipes_profile, PAGINATION_PAGE_SIZE)
     page_number = request.GET.get('page')
@@ -65,8 +53,7 @@ def profile_view(request, username):
     context = {'paginator': paginator,
                'page': page,
                'profile': profile,
-               'all_tags': all_tags,
-               'tags_list': tags_list}
+               'active_tags': active_tags}
     return render(request, 'profile.html', context)
 
 
@@ -154,17 +141,12 @@ def recipe_delete(request, recipe_id):
 
 @login_required
 def favorites(request):
-    tags_list = request.GET.getlist('tags')
-
-    if not tags_list:
-        tags_list = get_all_tags()
-
-    all_tags = Tag.objects.all()
+    active_tags, request_tags = tags_status(request)
 
     recipe_list = Recipe.objects.filter(
         favorite_recipes__user=request.user
     ).filter(
-        tags__value__in=tags_list
+        tags__value__in=active_tags
     ).distinct()
 
     paginator = Paginator(recipe_list, PAGINATION_PAGE_SIZE)
@@ -172,8 +154,7 @@ def favorites(request):
     page = paginator.get_page(page_number)
     context = {'paginator': paginator,
                'page': page,
-               'all_tags': all_tags,
-               'tags_list': tags_list}
+               'active_tags': active_tags}
     return render(request, 'my_favorite.html', context)
 
 
@@ -208,29 +189,23 @@ def shop_list(request):
 
 @login_required
 def get_purchases(request):
-    recipes = Recipe.objects.filter(
+    shop_list = Recipe.objects.filter(
         shop_list__user=request.user
-    ).values_list('ingredients__title',
-                  'recipe_amount__quantity',
-                  'ingredients__dimension')
-    # new_shop_list = Recipe.objects.filter(shop_list__user=request.user).annotate(dimension=Sum('quantity'))
-    # print(recipes)
-    # print(new_shop_list[0].dimension)
-    ing = {}
-    for recipe in recipes:
-        title = recipe[0]
-        quantity = recipe[1]
-        dimension = recipe[2]
-        if title in ing.keys():
-            ing[title] = [ing[title][0] + dimension, quantity]
-        else:
-            ing[title] = [dimension, quantity]
+    ).order_by(
+        'ingredients__title'
+    ).values(
+        'ingredients__title', 'ingredients__dimension'
+    ).annotate(
+        total_quantity=Sum('recipe_amount__quantity')
+    )
 
     response = HttpResponse(content_type='txt/csv')
     response['Content-Disposition'] = 'attachment; filename=shop_list.txt"'
     writer = csv.writer(response)
-    for key, value in ing.items():
-        writer.writerow([f'{key} ({value[1]}) - {value[0]}'])
+    for item in shop_list:
+        writer.writerow([f"{item['ingredients__title']} "
+                         f"({item['total_quantity']} - "
+                         f"{item['ingredients__dimension']})"])
     return response
 
 
@@ -280,10 +255,9 @@ def subscriptions(request, author_id):
     if request.method == 'POST':
         author_id = json.loads(request.body).get('id')
         author = get_object_or_404(User, id=author_id)
-        obj, created = Subscription.objects.get_or_create(user=request.user,
-                                                          author=author)
-        if request.user == author or not created:
+        if request.user == author:
             return JSON_FALSE
+        Subscription.objects.get_or_create(user=request.user, author=author)
         return JSON_TRUE
     elif request.method == 'DELETE':
         author = get_object_or_404(User, id=author_id)

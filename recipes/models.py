@@ -9,7 +9,7 @@ class Tag(models.Model):
     name = models.CharField('Имя в шаблона', max_length=50, null=True)
 
     def __str__(self):
-        return self.name
+        return self.value
 
 
 class Ingredient(models.Model):
