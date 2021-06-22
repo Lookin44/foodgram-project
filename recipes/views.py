@@ -13,7 +13,7 @@ from foodgram.settings import PAGINATION_PAGE_SIZE
 from .form import RecipeForm
 from .utils import get_ingredients, tags_status
 from .models import (Amount, Favorite, Ingredient, Recipe, ShopList,
-                     Subscription, Tag, User)
+                     Subscription, User)
 
 
 JSON_FALSE = JsonResponse({'success': False})
