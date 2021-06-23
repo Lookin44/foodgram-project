@@ -6,7 +6,6 @@
 {% endblock static %}
 {% block content %}
 {% csrf_token %}
-{% load recipe_filters %}
 <main class="main container">
     <div class="single-card" data-id={{ recipe.id }} data-author={{ recipe.author_id }}>
         {% load thumbnail %}
@@ -32,20 +31,14 @@
                 <ul class="single-card__items">
                     <li class="single-card__item"><p class="single-card__text"><span class="icon-user"></span>&#160;&#160;{{ recipe.author.first_name }}</p></li>
                 {% if user.is_authenticated and recipe.author == request.user%}
-                    <li class="single-card__item">  <a style="margin-left: 2.5em" href="{% url 'recipe_edit' recipe.id %}" class="single-card__text">Редактировать рецепт</a></li>
+                    <li class="single-card__item">  <a href="{% url 'recipe_edit' recipe.id %}" class="single-card__text">Редактировать рецепт</a></li>
                 {% endif %}
                 </ul>
             </div>
             <ul class="single-card__items">
             {% if user.is_authenticated %}
                 {% include 'buttons/purchases_button.html' with main_recipe=True %}
-                {% if request.user != recipe.author %}
-                    {% if request|is_follower:recipe.author %}
-                        <li class="single-card__item">{% include 'buttons/follow_button.html' with text='Отписаться от автора' %}</li>
-                    {% else %}
-                        <li class="single-card__item">{% include 'buttons/follow_button.html' with text='Подписаться на автора' %}</li>
-                    {% endif %}
-                {% endif %}
+                {% include 'buttons/follow_button.html' with main_recipe=True %}
             {% endif %}
             </ul>
             <div class="single-card__section">

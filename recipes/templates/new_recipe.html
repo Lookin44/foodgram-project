@@ -51,7 +51,7 @@
                             <div class="form__dropdown-items"></div>
                         </div>
 
-                        <input type="number" id="cantidad" class="form__input" min="0">
+                        <input type="number" id="cantidad" class="form__input" min="1">
                         <label for="cantidad" class="form__label" id="cantidadVal">шт.</label>
                     </div>
                     <div class="form__field-group-ingredientes-container">
@@ -66,15 +66,15 @@
                         {% endfor %}
                     </div>
                     <span class="form__ingredient-link" id="addIng">Добавить ингредиент</span>
-                    {% for error in form.ingredients.errors %}
-                        <span class="form__error">{{ error }}</span>
-                    {% endfor %}
+                    {% if errors %}
+                        <span class="form__error">{{ errors }}</span>
+                    {% endif %}
                 </div>
             </div>
             <div class="form__group">
                 <label for="{{ form.cooking_time.id_for_label }}" class="form__label">Время приготовления</label>
                 <div class="form__field-group form__field-group_time">
-                    {{ form.cooking_time|addclass:"form__input" }}
+                    {{ form.cooking_time|addclass:"form__input " }}
                     <label for="{{ field.cooking_time.id_for_label }}" class="form__label">минут</label>
                     {% for error in form.cooking_time.errors %}
                         <span class="form__error">{{ error }}</span>

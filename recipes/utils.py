@@ -19,7 +19,7 @@ def get_ingredients(request):
     return ingredients
 
 
-def tags_status(request):
+def get_tags_status(request):
     all_tags = Tag.objects.all()
     request_tags = request.GET.getlist('tags')
 
@@ -28,6 +28,7 @@ def tags_status(request):
             request_tags.append(tag.value)
 
     active_tags = {}
+
     for tag in all_tags:
         if tag.value in request_tags:
             active_tags[tag.value] = {'status': True,

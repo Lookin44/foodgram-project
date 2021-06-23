@@ -11,7 +11,7 @@ from django.views.decorators.http import require_http_methods
 from foodgram.settings import PAGINATION_PAGE_SIZE
 
 from .form import RecipeForm
-from .utils import get_ingredients, tags_status
+from .utils import get_ingredients, get_tags_status
 from .models import (Amount, Favorite, Ingredient, Recipe, ShopList,
                      Subscription, User)
 
@@ -21,7 +21,7 @@ JSON_TRUE = JsonResponse({'success': True})
 
 
 def index(request):
-    active_tags, request_tags = tags_status(request)
+    active_tags, request_tags = get_tags_status(request)
 
     recipe_list = Recipe.objects.filter(
         tags__value__in=request_tags
@@ -41,11 +41,12 @@ def index(request):
 
 
 def profile_view(request, username):
-    active_tags, request_tags = tags_status(request)
+    active_tags, request_tags = get_tags_status(request)
     profile = get_object_or_404(User, username=username)
 
-    recipes_profile = profile.recipes.filter(author=profile).filter(
-        tags__value__in=active_tags).distinct()
+    recipes_profile = profile.recipes.filter(
+        author=profile, tags__value__in=request_tags
+    ).distinct()
 
     paginator = Paginator(recipes_profile, PAGINATION_PAGE_SIZE)
     page_number = request.GET.get('page')
@@ -80,9 +81,12 @@ def new_recipe(request):
         ingredients_add = get_ingredients(request)
         if not ingredients_add:
             return render(request, 'new_recipe.html',
-                          {'form': form, 'new': True})
+                          {'form': form,
+                           'new': True,
+                           'errors': 'Добавьте ингредиент.'}
+                          )
         for title, quantity in ingredients_add.items():
-            ingredient = get_object_or_404(Ingredient, title=title)
+            ingredient = Ingredient.objects.get(title=title)
             ingredient_item = Amount(recipe=recipe,
                                      quantity=quantity,
                                      ingredient=ingredient)
@@ -110,11 +114,19 @@ def recipe_edit(request, recipe_id):
         change_recipe.recipe_amount.all().delete()
         ingredients_new = get_ingredients(request)
         if not ingredients_new:
-            return render(request, 'new_recipe.html', {'form': form,
-                                                       'recipe': recipe,
-                                                       'new': False})
+            return render(request, 'new_recipe.html',
+                          {'form': form,
+                           'new': False,
+                           'errors': 'Добавьте ингредиент.'}
+                          )
         for title, quantity in ingredients_new.items():
-            ingredient = get_object_or_404(Ingredient, title=title)
+            ingredient = Ingredient.objects.filter(title=title)
+            if not ingredient:
+                return render(request, 'new_recipe.html',
+                              {'form': form,
+                               'new': False,
+                               'errors': 'Такого ингредиента нет.'}
+                              )
             amount = Amount(recipe=change_recipe,
                             ingredient=ingredient,
                             quantity=quantity)
@@ -141,12 +153,10 @@ def recipe_delete(request, recipe_id):
 
 @login_required
 def favorites(request):
-    active_tags, request_tags = tags_status(request)
+    active_tags, request_tags = get_tags_status(request)
 
     recipe_list = Recipe.objects.filter(
-        favorite_recipes__user=request.user
-    ).filter(
-        tags__value__in=active_tags
+        favorite_recipes__user=request.user, tags__value__in=request_tags
     ).distinct()
 
     paginator = Paginator(recipe_list, PAGINATION_PAGE_SIZE)

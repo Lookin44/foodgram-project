@@ -19,12 +19,12 @@
                 </li>
             {% endfor%}
             {% if subscription.recipes.count > 3 %}<li class="card-user__item">
-                <a href="{% url 'profile' username=subscription.username %}" class="card-user__link link">Еще {{ subscription.recipes.count|add:-3 }} {{ subscription.recipes.count|correct_declension:3 }}:</a>
+                <a href="{% url 'profile' username=subscription.username %}" class="card-user__link link">{{ subscription.recipes.count|correct_declension }}</a>
             </li>
             {% endif %}
         </ul>
     </div>
     <div class="card-user__footer">
-        {% include 'buttons/follow_button.html' with text='Отписаться' %}
+        <button class="button button_style_light-blue button_size_auto" name="subscribe">Отписаться</button>
     </div>
 </div>

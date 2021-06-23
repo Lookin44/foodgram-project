@@ -1,14 +1,6 @@
 {% load recipe_filters %}
-{% if main_recipe %}
-    {% if not request|is_in_purchases:recipe %}
-        <li class="single-card__item"><button class="button button_style_blue" name="purchases" data-out><span class="icon-plus button-icon"></span>Добавить в покупки</button></li>
-    {% else %}
-        <li class="single-card__item"><button class="button button_style_blue-outline" name="purchases"><span class="icon-check button-icon"></span>Рецепт добавлен</button></li>
-    {% endif%}
+{% if not request|is_in_purchases:recipe %}
+    {% if main_recipe %}<li class="single-card__item">{% endif%}<button {% if main_recipe %}class="button button_style_blue" {% else %} class="button button_style_light-blue" {% endif%} name="purchases" data-out><span class="icon-plus button-icon"></span>Добавить в покупки</button></li>
 {% else %}
-    {% if not request|is_in_purchases:recipe %}
-        <button class="button button_style_light-blue" name="purchases" data-out><span class="icon-plus button__icon"></span>Добавить в покупки</button>
-    {% else %}
-        <button class="button button_style_light-blue-outline" name="purchases"><span class="icon-check button__icon"></span>Рецепт добавлен</button>
-    {% endif%}
-{% endif %}
+    {% if main_recipe %}<li class="single-card__item">{% endif%}<button {% if main_recipe %}class="button button_style_blue-outline" {% else %} class="button button_style_light-blue-outline" {% endif%} name="purchases"><span class="icon-check button-icon"></span>Рецепт добавлен</button></li>
+{% endif%}

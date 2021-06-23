@@ -1,1 +1,8 @@
-<button class="button button_style_light-blue button_size_auto" name="subscribe">{{ text }}</button>
+{% load recipe_filters %}
+{% if request.user != recipe.author %}
+    {% if request|is_follower:recipe.author %}
+        {% if main_recipe %}<li class="single-card__item">{% else %}<p class="follow_button">{% endif %}<button class="button button_style_light-blue button_size_auto" name="subscribe">Отписаться от автора</button></li></p>
+    {% else %}
+        {% if main_recipe %}<li class="single-card__item">{% else %}<p class="follow_button">{% endif %}<button class="button button_style_light-blue button_size_auto" name="subscribe">Подписаться на автора</button></li></p>
+    {% endif %}
+{% endif %}
