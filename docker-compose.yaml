@@ -8,7 +8,7 @@ services:
     env_file:
       - ./.env
   web:
-    build: .
+    image: loolin44/foodgram_project:latest
     restart: always
     volumes:
       - static_value:/var/html/static/
