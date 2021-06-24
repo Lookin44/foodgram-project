@@ -14,8 +14,7 @@ def get_filter_tags(request, tag):
     if not tags_list:
         for tag_item in all_tags:
             tags_list.append(tag_item.value)
-    else:
-        tags_list = new_request.getlist('tags')
+
     if tag in tags_list:
         tags_list.remove(tag)
         new_request.setlist('tags', tags_list)

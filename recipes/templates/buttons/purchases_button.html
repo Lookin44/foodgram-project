@@ -1,6 +1,10 @@
 {% load recipe_filters %}
 {% if not request|is_in_purchases:recipe %}
-    {% if main_recipe %}<li class="single-card__item">{% endif%}<button {% if main_recipe %}class="button button_style_blue" {% else %} class="button button_style_light-blue" {% endif%} name="purchases" data-out><span class="icon-plus button-icon"></span>Добавить в покупки</button></li>
+    {% if main_recipe %}<li class="single-card__item">{% endif%}
+    <button class="button {% if main_recipe %}button_style_blue{% else %}button_style_light-blue{% endif%}" name="purchases" data-out><span class="icon-plus button-icon"></span>Добавить в покупки</button>
+    </li>
 {% else %}
-    {% if main_recipe %}<li class="single-card__item">{% endif%}<button {% if main_recipe %}class="button button_style_blue-outline" {% else %} class="button button_style_light-blue-outline" {% endif%} name="purchases"><span class="icon-check button-icon"></span>Рецепт добавлен</button></li>
+    {% if main_recipe %}<li class="single-card__item">{% endif%}
+    <button class="button {% if main_recipe %}button_style_blue-outline{% else %}button_style_light-blue-outline{% endif%}" name="purchases"><span class="icon-check button-icon"></span>Рецепт добавлен</button>
+    </li>
 {% endif%}

@@ -85,7 +85,13 @@ def new_recipe(request):
                            'errors': 'Добавьте ингредиент.'}
                           )
         for title, quantity in ingredients_add.items():
-            ingredient = Ingredient.objects.get(title=title)
+            if not Ingredient.objects.filter(title=title):
+                return render(request, 'new_recipe.html',
+                              {'form': form,
+                               'new': True,
+                               'errors': 'Такого ингредиента нет.'}
+                              )
+            ingredient = get_object_or_404(Ingredient, title=title)
             ingredient_item = Amount(recipe=recipe,
                                      quantity=quantity,
                                      ingredient=ingredient)
@@ -119,13 +125,13 @@ def recipe_edit(request, recipe_id):
                            'errors': 'Добавьте ингредиент.'}
                           )
         for title, quantity in ingredients_new.items():
-            ingredient = Ingredient.objects.filter(title=title)
-            if not ingredient:
+            if not Ingredient.objects.filter(title=title):
                 return render(request, 'new_recipe.html',
                               {'form': form,
                                'new': False,
                                'errors': 'Такого ингредиента нет.'}
                               )
+            ingredient = get_object_or_404(Ingredient, title=title)
             amount = Amount(recipe=change_recipe,
                             ingredient=ingredient,
                             quantity=quantity)
