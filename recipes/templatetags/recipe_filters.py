@@ -39,9 +39,9 @@ def correct_declension(all_recipes):
     if (all_recipes % 10 == 1) and (all_recipes % 100 != 11):
         word = ONE_RECIPE
     elif (
-            (all_recipes % 10 >= 2) and
-            (all_recipes % 10 <= 4) and
-            (all_recipes % 100 < 10 or all_recipes % 100 >= 20)
+            (all_recipes % 10 >= 2)
+            and (all_recipes % 10 <= 4)
+            and (all_recipes % 100 < 10 or all_recipes % 100 >= 20)
     ):
         word = FEW_RECIPES
     return f'Еще {all_recipes} {word}...'

@@ -11,10 +11,9 @@ from django.views.decorators.http import require_http_methods
 from foodgram.settings import PAGINATION_PAGE_SIZE
 
 from .form import RecipeForm
-from .utils import get_ingredients, get_tags_status
 from .models import (Amount, Favorite, Ingredient, Recipe, ShopList,
                      Subscription, User)
-
+from .utils import get_ingredients, get_tags_status
 
 JSON_FALSE = JsonResponse({'success': False})
 JSON_TRUE = JsonResponse({'success': True})

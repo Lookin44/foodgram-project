@@ -22,7 +22,3 @@ def get_filter_tags(request, tag):
     else:
         new_request.appendlist('tags', tag)
     return new_request.urlencode()
-
-
-
-
