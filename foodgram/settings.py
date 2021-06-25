@@ -10,7 +10,7 @@ SECRET_KEY = os.getenv('DJANGO_KEY')
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', '130.193.40.78']
+ALLOWED_HOSTS = ['130.193.40.78']
 
 INSTALLED_APPS = [
     'about',
@@ -69,13 +69,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
-# Переведу базу в PostgreSQL как только пройду первую часть ревью
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
 DATABASES = {
     'default': {
         'ENGINE': os.getenv('DB_ENGINE'),
