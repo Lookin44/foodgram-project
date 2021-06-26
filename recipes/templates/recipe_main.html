@@ -42,7 +42,7 @@
             <ul class="single-card__items">
             {% if user.is_authenticated %}
                 {% include 'buttons/purchases_button.html' with main_recipe=True %}
-                {% include 'buttons/follow_button.html' with main_recipe=True %}
+                {% include 'buttons/follow_button.html' with main_recipe=True profile=recipe.author%}
             {% endif %}
             </ul>
             <div class="single-card__section">
