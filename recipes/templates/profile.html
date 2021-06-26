@@ -9,7 +9,7 @@
 {% csrf_token %}
  <main class="main container">
     <div class="main__header">
-        <h1 class="main__title">{{ profile.first_name }}</h1>
+        <h1 class="main__title">{{ profile.username }}</h1>
         {% include 'include/tag.html' with active_tags=active_tags%}
     </div>
     {% if user.is_authenticated and request.user != profile %}

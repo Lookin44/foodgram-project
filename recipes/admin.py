@@ -1,11 +1,17 @@
 from django.contrib import admin
 
-from .models import Ingredient, Recipe, Subscription, Tag
+from .models import Amount, Ingredient, Recipe, Subscription, Tag
+
+
+class AmountInline(admin.TabularInline):
+    model = Amount
+    fields = ["ingredient", "quantity"]
 
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     list_display = ('title', 'author')
+    inlines = [AmountInline]
     list_filter = ('author', 'title', 'tags')
 
 
