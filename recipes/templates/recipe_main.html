@@ -34,7 +34,7 @@
                             <p class="single-card__text"><span class="icon-user"></span><a href="{% url 'profile' recipe.author.username %}" style="text-decoration: none; color: black">{{ recipe.author.username}}</a></p>
                         </li>
                     </a>
-                    {% if recipe.author == request.user %}
+                    {% if recipe.author == request.user or request.user.is_superuser %}
                         <li class="single-card__item">  <a style="margin-left: 2.5em" href="{% url 'recipe_edit' recipe.id %}" class="single-card__text">Редактировать</a></li>
                     {% endif %}
                 </ul>

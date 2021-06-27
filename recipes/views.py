@@ -20,10 +20,12 @@ JSON_TRUE = JsonResponse({'success': True})
 
 
 def index(request):
-    active_tags, request_tags = get_tags_status(request)
+    active_tags, request_tags, all_tags = get_tags_status(request)
 
     recipe_list = Recipe.objects.filter(
-        tags__value__in=request_tags
+        tags__value__in=(
+            request_tags if request_tags else all_tags.values('value')
+        )
     ).select_related(
         'author'
     ).prefetch_related(
@@ -40,11 +42,13 @@ def index(request):
 
 
 def profile_view(request, username):
-    active_tags, request_tags = get_tags_status(request)
+    active_tags, request_tags, all_tags = get_tags_status(request)
     profile = get_object_or_404(User, username=username)
 
     recipes_profile = profile.recipes.filter(
-        author=profile, tags__value__in=request_tags
+        author=profile, tags__value__in=(
+            request_tags if request_tags else all_tags.values('value')
+        )
     ).distinct()
 
     paginator = Paginator(recipes_profile, PAGINATION_PAGE_SIZE)
@@ -100,7 +104,7 @@ def new_recipe(request):
 def recipe_edit(request, recipe_id):
     recipe = get_object_or_404(Recipe, pk=recipe_id)
 
-    if request.user != recipe.author:
+    if request.user != recipe.author and not request.user.is_superuser:
         return redirect('recipe', recipe_id=recipe_id)
 
     form = RecipeForm(request.POST,
@@ -138,7 +142,7 @@ def recipe_edit(request, recipe_id):
 def recipe_delete(request, recipe_id):
     recipe = get_object_or_404(Recipe, pk=recipe_id)
 
-    if request.user == recipe.author:
+    if request.user == recipe.author or request.user.is_superuser:
         recipe.delete()
         return redirect('index')
     return redirect('recipe', recipe_id=recipe_id)
@@ -146,10 +150,12 @@ def recipe_delete(request, recipe_id):
 
 @login_required
 def favorites(request):
-    active_tags, request_tags = get_tags_status(request)
+    active_tags, request_tags, all_tags = get_tags_status(request)
 
     recipe_list = Recipe.objects.filter(
-        favorite_recipes__user=request.user, tags__value__in=request_tags
+        favorite_recipes__user=request.user, tags__value__in=(
+            request_tags if request_tags else all_tags.values('value')
+        )
     ).distinct()
 
     paginator = Paginator(recipe_list, PAGINATION_PAGE_SIZE)
@@ -203,7 +209,7 @@ def get_purchases(request):
     )
 
     response = HttpResponse(content_type='txt/csv')
-    response['Content-Disposition'] = 'attachment; filename=shop_list.txt"'
+    response['Content-Disposition'] = 'attachment; filename=shop_list.txt'
     writer = csv.writer(response)
     for item in shop_list:
         writer.writerow([f"{item['ingredients__title']} "

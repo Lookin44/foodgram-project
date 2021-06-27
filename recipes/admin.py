@@ -30,3 +30,10 @@ class SubscriptionAdmin(admin.ModelAdmin):
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     list_display = ('value', 'style', 'name')
+
+
+@admin.register(Amount)
+class RecipeIngredientAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'recipe', 'ingredient', 'quantity',)
+    list_display_links = ('pk', 'recipe')
+    list_filter = ('recipe', 'ingredient',)
