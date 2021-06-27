@@ -12,7 +12,7 @@
         </ul>
         <div class="card__items card__items_column">
             <p class="card__text"><span class="icon-time"></span>&#160;&#160;{{ recipe.cooking_time }}&#160;мин</p>
-            <p class="card__text"><span class="icon-user"></span><a href="{% url 'profile' recipe.author.username %}" style="text-decoration: none" style="color: black">&#160;&#160;&#160;{{ recipe.author.username }}</a></p>
+            <p class="card__text"><span class="icon-user"></span><a href="{% url 'profile' recipe.author.username %}" style="text-decoration: none; color: black">{{ recipe.author.username }}</a></p>
         </div>
     </div>
     <div class="card__footer">
