@@ -112,8 +112,8 @@ def recipe_edit(request, recipe_id):
                       instance=recipe)
     if form.is_valid():
         change_recipe = form.save(commit=False)
-         if change_recipe.author == request.user:
-            change_recipe.author = request.user
+        if change_recipe.author == request.user:
+           change_recipe.author = request.user
         change_recipe.save()
         change_recipe.recipe_amount.all().delete()
         ingredients_new = get_ingredients(request)
