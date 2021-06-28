@@ -17,10 +17,17 @@ class Tag(models.Model):
 
 class Ingredient(models.Model):
     title = models.CharField(verbose_name='Имя ингредиента',
-                             max_length=200,
-                             unique=True)
+                             max_length=200)
     dimension = models.CharField(verbose_name='Единица измерения',
                                  max_length=50)
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title', 'dimension'],
+                name='unique_recipe_ingredient',
+            )
+        ]
 
     def __str__(self):
         return self.title
