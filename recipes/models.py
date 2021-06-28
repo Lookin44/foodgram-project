@@ -23,11 +23,9 @@ class Ingredient(models.Model):
     
     class Meta:
         constraints = [
-            models.UniqueConstraint(
-                fields=['title', 'dimension'],
-                name='unique_recipe_ingredient',
-            )
-        ]
+            models.UniqueConstraint(fields=['title', 'dimension'],
+                                    name='unique_recipe_ingredient')
+            ]
 
     def __str__(self):
         return self.title
