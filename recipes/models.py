@@ -20,12 +20,11 @@ class Ingredient(models.Model):
                              max_length=200)
     dimension = models.CharField(verbose_name='Единица измерения',
                                  max_length=50)
-    
+
     class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=['title', 'dimension'],
-                                    name='unique_recipe_ingredient')
-            ]
+        constraints = [models.UniqueConstraint(
+            fields=['title', 'dimension'],
+            name='unique_recipe_ingredient')]
 
     def __str__(self):
         return self.title
