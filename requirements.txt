@@ -1,7 +1,7 @@
 asgiref==3.3.4
 defusedxml==0.7.1
 diff-match-patch==20200713
-Django==3.2.3
+Django==3.2.14
 et-xmlfile==1.1.0
 flake8==3.9.2
 flake8-broken-line==0.3.0
